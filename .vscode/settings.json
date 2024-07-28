@@ -1,5 +1,12 @@
 {
+<<<<<<< HEAD
 
     "python.analysis.typeCheckingMode": "off",
+=======
+    "cSpell.words": [
+        "изображение"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+>>>>>>> b1690d1ff1f54aa89862f9bffa5ec5b0cee464b0
     "python.analysis.autoImportCompletions": true
 }
