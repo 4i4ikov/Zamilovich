@@ -185,7 +185,7 @@ for key, value in strings.items():
 
 with open('insort.csv', 'w+') as file:
     file.write(strings['Заказы в ячейках СОРТ:\n'])
-bot.send_document(chat_id=chat_id, document=open('insort.csv', 'rb'), visible_file_name=f"В ячейках СОРТ.csv")
+bot.send_document(chat_id=chat_id, document=open('insort.csv', 'rb'), visible_file_name="В ячейках СОРТ.csv")
 message += f"Время выполнения скрипта: {round((datetime.now() - st).total_seconds(), 2)} сек."
 bot.send_message(chat_id, message, parse_mode='HTML')
 if time(7, 00) <= st.time() <= time(9, 10):
