@@ -233,42 +233,43 @@ def echo_message(msg):
     canUserUseMyBot = msg.from_user.id in ALLOW_USERS
 
     if canUserUseMyBot:
-        checksortables = not ("/no" in msg.text)
+        checksortables = "/no" not in msg.text
         logging.info(f"{st}: Взял в работу сообщение от {msg.from_user.full_name} чекаем заказы в ПИ? {checksortables}")
         if Orders:
             Orders = set(Orders)
             normalorders = set ()
             notnormalorders = set()
             for order in Orders:
-                if checksortables:
-                    ord = getOrder(order)
-                else:
-                    ord = True
-                if ord: normalorders.add(order) 
+                order = getOrder(order) if checksortables else True
+                if order: normalorders.add(order) 
                 else: notnormalorders.add(order)
             if not normalorders:
                 returnMessage += "Вы скинули только засылы?? зачем?????\n"
             else:
                 ass.getOrd(normalorders)
-                bot.send_document(chat_id=msg.chat.id,reply_to_message_id=msg.message_id,document=open("orders.xlsx",'rb'),visible_file_name=f"Orders.xlsx")
+                bot.send_document(
+                    chat_id=msg.chat.id,
+                    reply_to_message_id=msg.message_id,
+                    document=open("orders.xlsx", 'rb'),
+                    visible_file_name="Orders.xlsx",
+                )
                 if checksortables: returnMessage += f"Заказы есть в ПИ: {' '.join(normalorders)}\n"
                 else: returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за присутствия команды /no\n"
             if notnormalorders:
-                returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"  
+                returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
         if TOTEs:
             TOTEs = set(TOTEs)
-            returnMessage += f"ТОТы: {str(TOTEs)}\n"
+            returnMessage += f"ТОТы: {TOTEs}\n"
         if Pallets:
             Pallets = set(Pallets)
-            returnMessage += f"Паллеты: {str(Pallets)}\n"
+            returnMessage += f"Паллеты: {Pallets}\n"
     else: returnMessage += f"Ты не можешь взаимодействовать с ботом, обратись к @N0no0no\n {msg.from_user.id}"
     # bot.send_document(returnMessage,)
     returnMessage += f"Время выполнения скрипта:{(datetime.now()-st).total_seconds()}\n"
     if len(returnMessage) > 4096:
         for x in range(0, len(returnMessage), 4096):
-                bot.reply_to(msg, '{}'.format(returnMessage[x:x + 4096]))
+            bot.reply_to(msg, f'{returnMessage[x:x + 4096]}')
     else: bot.edit_message_text(chat_id=my_msg.chat.id,message_id=my_msg.message_id, text=f'{my_msg.text}\n{returnMessage}')   
-     
     # if Orders:
     #     Orders = set(Orders)
     #     for i in Orders:
@@ -299,7 +300,7 @@ def echo_message(msg):
     #         if not SortablesCount:
     #             reply += f"Грузоместа не найдены"
     #         bot.reply_to(message, reply)
-debug = True
+debug = False
 if not debug:
     while True:
         try:
