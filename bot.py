@@ -1,21 +1,11 @@
-# import datetime
-# import asyncio
 from datetime import datetime
-# import aiohttp
-# import json
 import logging
-# import sys
 import tempfile
 import time
 import requests
-# from pprint import pprint
-# from bs4 import BeautifulSoup
 import telebot
 import re
-# import pandas as pd
-# from requests.exceptions import RequestException
 import urllib3
-import asinhrom as ass
 import configparser
 import warnings
 from pyzbar.pyzbar import decode as pyzdecode
@@ -24,9 +14,7 @@ import cv2
 from pylibdmtx.pylibdmtx import decode as pydecode
 from updatesk import updatesk
 
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-
+# Logging setup
 logging.basicConfig(filename="log.log",
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
@@ -34,37 +22,37 @@ logging.basicConfig(filename="log.log",
                     level=logging.DEBUG,
                     encoding="utf-8")
 logger = logging.getLogger(__name__)
-
-logger.addHandler(ch)
 logging.info("Бот запускается...")
-# EMOJI = ["👎","👍", "🤔"]
 
-
+# Configuration setup
 warnings.filterwarnings("ignore")
 config = configparser.ConfigParser()
 urllib3.disable_warnings()
 config.read("config.ini")
 logging.info(f"Загружен ЛОГ:\n{config}")
-cookies = {
-    'Session_id': config.get("Session","Session_id"),
-}
-headers = {
-    'sk': config.get('Session','sk'),
-}
+
+# Session setup
+cookies = {'Session_id': config.get("Session", "Session_id")}
+headers = {'sk': config.get('Session', 'sk')}
 requestsSession = requests.Session()
 requestsSession.verify = False
 requestsSession.cookies.update(cookies)
 requestsSession.headers.update(headers)
+"""
+Get order details from the sorting center API.
 
+Args:
+    order: The order ID to retrieve details for.
 
+Returns:
+    dict: The data of the order if successful, False otherwise.
+
+Raises:
+    No specific exceptions are raised within this function.
+"""
 def getOrder(order):
     json_data = {
-        "params": [
-            {
-                "sortingCenterId": 1100000040,
-                "orderId": order,
-            },
-        ],
+        "params": [{"sortingCenterId": 1100000040, "orderId": order}],
         "path": f"/sorting-center/1100000040/orders/{order}",
     }
 
@@ -75,41 +63,26 @@ def getOrder(order):
     )
     if response.status_code != 200:
         sk = updatesk(cookies)
-        config.set("Session","sk",sk)
-        requestsSession.headers.update({
-    'sk': config.get('Session','sk'),
-})
-        with open('config.ini','w', encoding="utf8") as configfile:
+        config.set("Session", "sk", sk)
+        requestsSession.headers.update({'sk': sk})
+        with open('config.ini', 'w', encoding="utf8") as configfile:
             config.write(configfile)
         response = requestsSession.post(
-        "https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder",
-        json=json_data,
-        verify=False
-    )
-    if "data" in response.json()["results"][0].keys():
-        return response.json()["results"][0]["data"]
-    else:
-        return False
-
+            "https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder",
+            json=json_data,
+            verify=False
+        )
+    results = response.json().get("results", [])
+    return results[0]["data"] if results and "data" in results[0].keys() else False
 
 def getSortablesOfOrder(order):
     json_data = {
-        "params": [
-            {
-                "sortableStatuses": [],
-                "stages": [],
-                "orderExternalId": order,
-                "inboundIdTitle": "",
-                "outboundIdTitle": "",
-                "groupingDirectionId": "",
-                "groupingDirectionName": "",
-                "sortingCenterId": 1100000040,
-                "page": 0,
-                "size": 20,
-                "sortableTypes": [],
-                "crossDockOnly": False,
-            },
-        ],
+        "params": [{
+            "sortableStatuses": [], "stages": [], "orderExternalId": order,
+            "inboundIdTitle": "", "outboundIdTitle": "", "groupingDirectionId": "",
+            "groupingDirectionName": "", "sortingCenterId": 1100000040, "page": 0,
+            "size": 20, "sortableTypes": [], "crossDockOnly": False,
+        }],
         "path": "/sorting-center/1100000040/sortables?sortableTypes=&sortableStatuses=&sortableStatusesLeafs=&orderExternalId=423501618&inboundIdTitle=&outboundIdTitle=&groupingDirectionId=&groupingDirectionName=",
     }
     sortables = requestsSession.post(
@@ -118,118 +91,76 @@ def getSortablesOfOrder(order):
         verify=False
     )
     if sortables.status_code == 200:
-        sortables = sortables.json()["results"][0]["data"]["content"]
-
-    return sortables
-
+        return sortables.json()["results"][0]["data"]["content"]
+    return []
 
 def getOrders(inputstring):
-    RegularExpressionForOrders = r"^LO-\d{9}|^\d{9}|^VOZ_FBS_\d{8}|^PVZ_FBS_RET_\d{6}|^VOZ_FF_\d{8}|^VOZ_MK_\d{7}|^PVZ_FBY_RET_\d{6}"
-    return re.findall(RegularExpressionForOrders, inputstring, re.MULTILINE)
-
+    regex = r"^LO-\d{9}|^\d{9}|^VOZ_FBS_\d{8}|^PVZ_FBS_RET_\d{6}|^VOZ_FF_\d{8}|^VOZ_MK_\d{7}|^PVZ_FBY_RET_\d{6}"
+    return re.findall(regex, inputstring, re.MULTILINE)
 
 def getPallets(inputstring):
-    RegularExpressionForPallets = r"^F1.{18}$"
-    return re.findall(RegularExpressionForPallets, inputstring, re.MULTILINE)
-
+    regex = r"^F1.{18}$"
+    return re.findall(regex, inputstring, re.MULTILINE)
 
 def getTOTEs(inputstring):
-    RegularExpressionForTOTEs = r"^F2.{18}$"
-    return re.findall(RegularExpressionForTOTEs, inputstring, re.MULTILINE)
+    regex = r"^F2.{18}$"
+    return re.findall(regex, inputstring, re.MULTILINE)
+
 ALLOW_USERS = [
-    5291102003,
-    1063498880,
-    6478014074,
-    1019990315,
-    1133129646,
-    6946675945,
-    1641769105,
-    6478014074,
-    1213362983
+    5291102003, 1063498880, 6478014074, 1019990315, 1133129646,
+    6946675945, 1641769105, 6478014074, 1213362983
 ]
 
-
-API_TOKEN = config.get("BOT","API_TOKEN")
-print ("Запуск бота")
+API_TOKEN = config.get("BOT", "API_TOKEN")
+print("Запуск бота")
 bot = telebot.TeleBot(API_TOKEN)
-# Распознать ШК заказов по фото
+
 @bot.message_handler(content_types=['photo'], func=lambda message: message.from_user.id == message.chat.id)
 def photo(message):
-    # if (message.caption and "qr" in message.caption):
     print('получил изображение')
-    # bot.set_message_reaction(message.chat.id,message.id,[telebot.types.ReactionTypeEmoji(EMOJI[2])])
     fileID = message.photo[-1].file_id
     file_info = bot.get_file(fileID)
-
     downloaded_file = bot.download_file(file_info.file_path)
 
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        temp.write(downloaded_file)
+        temp_path = temp.name
 
-    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
-    temp.write(downloaded_file)
-    temp.close()
+    image = cv2.imread(temp_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    with open(temp.name, mode='rb') as f:
-        image = cv2.imread(temp.name)
-    try:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # cv2.imwrite(temp[1].name,gray)
-    except Exception as err: print(err)
-    else:
-        gray = image
-        # cv2.imwrite(temp[1].name,gray)
-
-# The line `barcodeScanners = [` is initializing a list named `barcodeScanners`. This list will be
-# used to store the results of barcode decoding from different methods. Each element in the list will
-# hold the decoded information from a specific barcode scanning method.
     barcodeScanners = [pyzdecode(gray)]
     decoder = cv2.QRCodeDetector()
     retval, decoded_info, points, straight_qrcode = decoder.detectAndDecodeMulti(gray)
-
     barcodeScanners.append(decoded_info)
-
     barcodeScanners.append(pydecode(gray))
 
     print(barcodeScanners)
-    decoded = set()
-    if barcodeScanners[0]:
-        for qrcode in barcodeScanners[0]:decoded.add( qrcode.data.decode())
+    decoded = {qrcode.data.decode() for qrcode in barcodeScanners[0]} if barcodeScanners[0] else set()
     if retval:
-        for qrcode in barcodeScanners[1]:
-            decoded.add(qrcode)
+        decoded.update(decoded_info)
     if barcodeScanners[2]:
-        for qrcode in barcodeScanners[2]:decoded.add( qrcode.data.decode())
+        decoded.update(qrcode.data.decode() for qrcode in barcodeScanners[2])
 
-    # with open("image.jpg", 'wb+') as new_file:
-    #     new_file.write(downloaded_file)
-    # bot.send_photo(chat_id=message.chat.id,message_thread_id=message.message_thread_id,reply_to_message_id=message.message_id,photo=open("gray.png","rb"))
-    if (decoded):
-        # bot.set_message_reaction(message.chat.id,message.id,[telebot.types.ReactionTypeEmoji(EMOJI[1])])
-        forward = bot.forward_message(chat_id=-1002205631792,from_chat_id=message.chat.id,message_id=message.id,message_thread_id=88)
-        bot.reply_to(forward,f"{'\n'.join(decoded)}")
+    if decoded:
+        forward = bot.forward_message(chat_id=-1002205631792, from_chat_id=message.chat.id, message_id=message.id, message_thread_id=88)
+        bot.reply_to(forward, f"{'\n'.join(decoded)}")
     else:
         print("не распознал\n")
-        # forward = bot.forward_message(chat_id=-1002205631792,from_chat_id=message.chat.id,message_id=message.id,message_thread_id=94)
-        # bot.reply_to(forward,f"Не смог распознать.")
 
-# Узнать ID текущего чата
-@bot.message_handler(commands=['id']) # Узнать ID чата
+@bot.message_handler(commands=['id'])
 def echo_message(message):
-    bot.reply_to(message,f"Chat_id: {message.chat.id}\nThread_id: {message.message_thread_id}")
+    bot.reply_to(message, f"Chat_id: {message.chat.id}\nThread_id: {message.message_thread_id}")
 
-
-
-# Выгрузка заказов из ПИ
-@bot.message_handler(commands=['bot']) #Выгрузка заказов из ПИ
+@bot.message_handler(commands=['bot'])
 def echo_message(msg): 
     st = datetime.now()
-    msg.text = msg.text.replace(',','\n').replace(' ','\n').replace('(','\n').replace(')','\n')
-    # bot.reply_to(message, f"Привет, {message.from_user.full_name}, взял в работу, время {st}\nТвой user_id: {message.from_user.id}\n")
+    msg.text = msg.text.replace(',', '\n').replace(' ', '\n').replace('(', '\n').replace(')', '\n')
     my_msg = bot.reply_to(msg, f"Привет, {msg.from_user.full_name}, взял в работу\n")
-    # reply = "ты написал мне: \"" + message.text + "\" длина твоего сообщения: " + str (len(message.text) )   + "\n"
     Orders = getOrders(msg.text)
     Pallets = getPallets(msg.text)
     TOTEs = getTOTEs(msg.text)
-    returnMessage = f""
+    returnMessage = ""
     canUserUseMyBot = msg.from_user.id in ALLOW_USERS
 
     if canUserUseMyBot:
@@ -237,7 +168,7 @@ def echo_message(msg):
         logging.info(f"{st}: Взял в работу сообщение от {msg.from_user.full_name} чекаем заказы в ПИ? {checksortables}")
         if Orders:
             Orders = set(Orders)
-            normalorders = set ()
+            normalorders = set()
             notnormalorders = set()
             for order in Orders:
                 order = getOrder(order) if checksortables else True
@@ -256,6 +187,7 @@ def echo_message(msg):
                 if checksortables: returnMessage += f"Заказы есть в ПИ: {' '.join(normalorders)}\n"
                 else: returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за присутствия команды /no\n"
             if notnormalorders:
+                returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
                 returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
         if TOTEs:
             TOTEs = set(TOTEs)
