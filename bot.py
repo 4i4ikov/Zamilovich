@@ -125,21 +125,17 @@ def getSortablesOfOrder(order):
 
 def getOrders(inputstring):
     RegularExpressionForOrders = r"^LO-\d{9}|^\d{9}|^VOZ_FBS_\d{8}|^PVZ_FBS_RET_\d{6}|^VOZ_FF_\d{8}|^VOZ_MK_\d{7}|^PVZ_FBY_RET_\d{6}"
-    Orders = re.findall(RegularExpressionForOrders, inputstring, re.MULTILINE)
-    return Orders
+    return re.findall(RegularExpressionForOrders, inputstring, re.MULTILINE)
 
 
 def getPallets(inputstring):
     RegularExpressionForPallets = r"^F1.{18}$"
-    Pallets = re.findall(RegularExpressionForPallets, inputstring, re.MULTILINE)
-    return Pallets
+    return re.findall(RegularExpressionForPallets, inputstring, re.MULTILINE)
 
 
 def getTOTEs(inputstring):
     RegularExpressionForTOTEs = r"^F2.{18}$"
-    TOTes = re.findall(RegularExpressionForTOTEs, inputstring, re.MULTILINE)
-    return TOTes
-
+    return re.findall(RegularExpressionForTOTEs, inputstring, re.MULTILINE)
 ALLOW_USERS = [
     5291102003,
     1063498880,
@@ -157,17 +153,17 @@ API_TOKEN = config.get("BOT","API_TOKEN")
 print ("Запуск бота")
 bot = telebot.TeleBot(API_TOKEN)
 # Распознать ШК заказов по фото
-@bot.message_handler(content_types=['photo'], func=lambda message: message.from_user.id == message.chat.id) 
+@bot.message_handler(content_types=['photo'], func=lambda message: message.from_user.id == message.chat.id)
 def photo(message):
     # if (message.caption and "qr" in message.caption):
     print('получил изображение')
     # bot.set_message_reaction(message.chat.id,message.id,[telebot.types.ReactionTypeEmoji(EMOJI[2])])
     fileID = message.photo[-1].file_id
     file_info = bot.get_file(fileID)
-    
+
     downloaded_file = bot.download_file(file_info.file_path)
-    
-    
+
+
     temp = tempfile.NamedTemporaryFile(delete_on_close=False)
     temp.write(downloaded_file)
     temp.close()
@@ -182,11 +178,13 @@ def photo(message):
         gray = image
         # cv2.imwrite(temp[1].name,gray)
 
-    barcodeScanners = []
-    barcodeScanners.append(pyzdecode(gray))
+# The line `barcodeScanners = [` is initializing a list named `barcodeScanners`. This list will be
+# used to store the results of barcode decoding from different methods. Each element in the list will
+# hold the decoded information from a specific barcode scanning method.
+    barcodeScanners = [pyzdecode(gray)]
     decoder = cv2.QRCodeDetector()
     retval, decoded_info, points, straight_qrcode = decoder.detectAndDecodeMulti(gray)
-    
+
     barcodeScanners.append(decoded_info)
 
     barcodeScanners.append(pydecode(gray))
