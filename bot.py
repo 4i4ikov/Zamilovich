@@ -13,7 +13,7 @@ from PIL import Image
 import cv2
 from pylibdmtx.pylibdmtx import decode as pydecode
 from updatesk import updatesk
-
+import asinhrom as asinhrom
 # Logging setup
 logging.basicConfig(filename="log.log",
                     filemode='a',
@@ -132,7 +132,7 @@ def photo(message):
     barcodeScanners = [pyzdecode(gray)]
     decoder = cv2.QRCodeDetector()
     retval, decoded_info, points, straight_qrcode = decoder.detectAndDecodeMulti(gray)
-    barcodeScanners.append(decoded_info)
+    barcodeScanners.append(decoded_info) # type: ignore
     barcodeScanners.append(pydecode(gray))
 
     print(barcodeScanners)
@@ -149,11 +149,11 @@ def photo(message):
         print("не распознал\n")
 
 @bot.message_handler(commands=['id'])
-def echo_message(message):
+def echo_message_id(message):
     bot.reply_to(message, f"Chat_id: {message.chat.id}\nThread_id: {message.message_thread_id}")
 
 @bot.message_handler(commands=['bot'])
-def echo_message(msg): 
+def echo_message_bot(msg): 
     st = datetime.now()
     msg.text = msg.text.replace(',', '\n').replace(' ', '\n').replace('(', '\n').replace(')', '\n')
     my_msg = bot.reply_to(msg, f"Привет, {msg.from_user.full_name}, взял в работу\n")
@@ -170,21 +170,24 @@ def echo_message(msg):
             Orders = set(Orders)
             normalorders = set()
             notnormalorders = set()
+            orders_statuses = []
             for order in Orders:
-                order = getOrder(order) if checksortables else True
-                if order: normalorders.add(order) 
+                order2 = getOrder(order) if checksortables else True
+                orders_statuses.append(order2)
+                if order2: normalorders.add(order) 
                 else: notnormalorders.add(order)
             if not normalorders:
                 returnMessage += "Вы скинули только засылы?? зачем?????\n"
             else:
-                ass.getOrd(normalorders)
+                asinhrom.getOrd(normalorders)
                 bot.send_document(
                     chat_id=msg.chat.id,
                     reply_to_message_id=msg.message_id,
                     document=open("orders.xlsx", 'rb'),
                     visible_file_name="Orders.xlsx",
                 )
-                if checksortables: returnMessage += f"Заказы есть в ПИ: {' '.join(normalorders)}\n"
+                # panda = pd.norm
+                if checksortables: returnMessage += f"Заказы есть в ПИ: {orders_statuses}\n"
                 else: returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за присутствия команды /no\n"
             if notnormalorders:
                 returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
@@ -232,7 +235,7 @@ def echo_message(msg):
     #         if not SortablesCount:
     #             reply += f"Грузоместа не найдены"
     #         bot.reply_to(message, reply)
-debug = False
+debug = True
 if not debug:
     while True:
         try:

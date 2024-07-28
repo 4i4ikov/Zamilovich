@@ -1,0 +1,240 @@
+00:38:26,699 root INFO Бот запускается...
+00:38:26,699 root INFO Загружен ЛОГ:
+<configparser.ConfigParser object at 0x000001DB0C7B6A80>
+00:38:26,701 root INFO Бот запущен, ребята, работает!!1
+00:38:26,703 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:38:26,932 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getMe HTTP/11" 200 269
+00:38:26,935 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:38:27,183 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=1&timeout=20 HTTP/11" 200 179945
+00:38:27,383 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831687&timeout=20 HTTP/11" 200 164575
+00:38:27,462 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831787&timeout=20 HTTP/11" 200 189971
+00:38:27,540 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831887&timeout=20 HTTP/11" 200 66069
+00:38:31,151 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831920&timeout=20 HTTP/11" 200 397
+00:38:31,156 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:38:31,376 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3229%7D HTTP/11" 200 785
+00:38:31,378 root INFO 2024-07-29 00:38:31.152450: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:38:31,463 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/editMessageText?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A%D0%92%D1%80%D0%B5%D0%BC%D1%8F+%D0%B2%D1%8B%D0%BF%D0%BE%D0%BB%D0%BD%D0%B5%D0%BD%D0%B8%D1%8F+%D1%81%D0%BA%D1%80%D0%B8%D0%BF%D1%82%D0%B0%3A0.226352%0A&chat_id=5291102003&message_id=3230 HTTP/11" 200 593
+00:38:33,114 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831921&timeout=20 HTTP/11" 200 396
+00:38:33,197 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=Chat_id%3A+5291102003%0AThread_id%3A+None&reply_parameters=%7B%22message_id%22%3A+3231%7D HTTP/11" 200 694
+00:38:34,699 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831922&timeout=20 HTTP/11" 200 1275
+00:38:34,858 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3233%7D HTTP/11" 200 1663
+00:38:34,858 root INFO 2024-07-29 00:38:34.701568: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? False
+00:38:34,858 asyncio DEBUG Using proactor: IocpProactor
+00:38:34,938 asyncio DEBUG Get address info logistics.market.yandex.ru:443, type=<SocketKind.SOCK_STREAM: 1>, flags=<AddressInfo.AI_ADDRCONFIG: 1024>
+00:38:34,965 asyncio DEBUG Getting address info logistics.market.yandex.ru:443, type=<SocketKind.SOCK_STREAM: 1>, flags=<AddressInfo.AI_ADDRCONFIG: 1024> took 31.000ms: [(<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 0, '', ('87.250.250.97', 443))]
+00:38:34,994 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001DB0C7B4950> starts SSL handshake
+00:38:35,49 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001DB0C7B4950>: SSL handshake took 47.0 ms
+00:38:35,50 asyncio DEBUG <asyncio.TransportSocket fd=2620, family=2, type=1, proto=6, laddr=('192.168.1.158', 2801), raddr=('87.250.250.97', 443)> connected to 87.250.250.97:443: (<asyncio.sslproto._SSLProtocolTransport object at 0x000001DB0D0942F0>, <aiohttp.client_proto.ResponseHandler object at 0x000001DB0D07B230>)
+00:38:36,399 asyncio WARNING Executing <Task finished name='Task-1' coro=<getOrdersStatuses() done, defined at c:\Users\kozlo\OneDrive\desktop\Zamilovich\asinhrom.py:57> result=None created at C:\Program Files\Python312\Lib\asyncio\runners.py:100> took 0.844 seconds
+00:38:36,407 asyncio DEBUG <_ProactorSocketTransport closing fd=2620> received EOF
+00:38:36,408 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001DB0C7B4950> received EOF
+00:38:36,421 asyncio DEBUG Close <ProactorEventLoop running=False closed=False debug=True>
+00:38:36,526 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendDocument?chat_id=5291102003&reply_parameters=%7B%22message_id%22%3A+3233%7D HTTP/11" 200 1782
+00:38:36,608 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/editMessageText?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A%D0%AF+%D0%BD%D0%B5+%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D1%8F%D0%BB+%D0%B5%D1%81%D1%82%D1%8C+%D0%BB%D0%B8+%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D1%8B+%D0%B2+%D0%9F%D0%98%2C+%D0%B8%D0%B7-%D0%B7%D0%B0+%D0%BF%D1%80%D0%B8%D1%81%D1%83%D1%82%D1%81%D1%82%D0%B2%D0%B8%D1%8F+%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B+%2Fno%0A%D0%9F%D0%B0%D0%BB%D0%BB%D0%B5%D1%82%D1%8B%3A+%7B%27F1255584E810025A69F2%27%2C+%27F1255584E810025CF02C%27%7D%0A%D0%92%D1%80%D0%B5%D0%BC%D1%8F+%D0%B2%D1%8B%D0%BF%D0%BE%D0%BB%D0%BD%D0%B5%D0%BD%D0%B8%D1%8F+%D1%81%D0%BA%D1%80%D0%B8%D0%BF%D1%82%D0%B0%3A1.824586%0A&chat_id=5291102003&message_id=3234 HTTP/11" 200 1052
+00:38:54,765 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831923&timeout=20 HTTP/11" 200 23
+00:39:14,827 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831923&timeout=20 HTTP/11" 200 23
+00:39:34,893 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831923&timeout=20 HTTP/11" 200 23
+00:39:54,954 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831923&timeout=20 HTTP/11" 200 23
+00:40:15,18 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831923&timeout=20 HTTP/11" 200 23
+00:40:35,83 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831923&timeout=20 HTTP/11" 200 23
+00:40:49,39 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831923&timeout=20 HTTP/11" 200 419
+00:40:49,129 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3236%7D HTTP/11" 200 807
+00:40:49,130 root INFO 2024-07-29 00:40:49.042932: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:40:49,132 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): logistics.market.yandex.ru:443
+00:40:49,300 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 400 0
+00:40:49,302 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): logistics.market.yandex.ru:443
+00:40:49,454 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "PATCH /api/session HTTP/11" 200 None
+00:40:49,701 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:40:56,225 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831924&timeout=20 HTTP/11" 200 419
+00:40:56,313 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3238%7D HTTP/11" 200 807
+00:40:56,313 root INFO 2024-07-29 00:40:56.226827: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:40:56,485 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:40:59,705 root INFO Бот запущен, ребята, работает!!1
+00:40:59,707 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:40:59,911 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831925&timeout=20 HTTP/11" 200 1213
+00:40:59,923 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:41:00,17 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3241%7D HTTP/11" 200 807
+00:41:00,18 root INFO 2024-07-29 00:40:59.915399: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:41:00,146 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:41:00,148 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3240%7D HTTP/11" 200 807
+00:41:00,149 root INFO 2024-07-29 00:40:59.914403: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:41:00,244 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3242%7D HTTP/11" 200 807
+00:41:00,245 root INFO 2024-07-29 00:41:00.147851: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:41:00,247 urllib3.connectionpool DEBUG Starting new HTTPS connection (2): logistics.market.yandex.ru:443
+00:41:00,319 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:41:00,504 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:41:09,708 root INFO Бот запущен, ребята, работает!!1
+00:41:09,711 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:41:19,711 root INFO Бот запущен, ребята, работает!!1
+00:41:19,715 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:41:19,913 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 409 143
+00:41:39,918 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:42:00,5 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:42:20,77 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:42:40,147 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:43:00,218 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:43:20,293 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:43:40,365 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:44:00,445 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:44:20,519 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:44:40,589 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:45:00,664 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:45:20,750 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:45:40,824 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:46:00,898 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 200 23
+00:46:05,940 root INFO Бот запускается...
+00:46:05,943 root INFO Загружен ЛОГ:
+<configparser.ConfigParser object at 0x000001FE6DF60C50>
+00:46:05,959 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:46:06,204 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getMe HTTP/11" 200 269
+00:46:06,241 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:46:06,441 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831928&timeout=20 HTTP/11" 409 143
+00:46:06,443 TeleBot ERROR Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+00:46:06,445 TeleBot ERROR Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\__init__.py", line 1214, in __threaded_polling
+    polling_thread.raise_exceptions()
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\util.py", line 111, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\__init__.py", line 676, in __retrieve_updates
+    updates = self.get_updates(offset=(self.last_update_id + 1),
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\__init__.py", line 648, in get_updates
+    json_updates = apihelper.get_updates(
+                   ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\apihelper.py", line 330, in get_updates
+    return _make_request(token, method_url, params=payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+
+00:46:06,449 root INFO Бот запущен, ребята, работает!!1
+00:46:06,451 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:46:09,684 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=1&timeout=20 HTTP/11" 409 143
+00:46:09,694 TeleBot ERROR Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+00:46:09,697 TeleBot ERROR Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\__init__.py", line 1214, in __threaded_polling
+    polling_thread.raise_exceptions()
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\util.py", line 111, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\__init__.py", line 676, in __retrieve_updates
+    updates = self.get_updates(offset=(self.last_update_id + 1),
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\__init__.py", line 648, in get_updates
+    json_updates = apihelper.get_updates(
+                   ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\apihelper.py", line 330, in get_updates
+    return _make_request(token, method_url, params=payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\kozlo\AppData\Roaming\Python\Python312\site-packages\telebot\apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+
+00:46:46,426 root INFO Бот запускается...
+00:46:46,429 root INFO Загружен ЛОГ:
+<configparser.ConfigParser object at 0x00000156B8240200>
+00:46:46,457 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:46:46,719 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getMe HTTP/11" 200 269
+00:46:46,734 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:47:01,942 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=1&timeout=20 HTTP/11" 200 419
+00:47:01,959 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:47:02,198 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3246%7D HTTP/11" 200 807
+00:47:02,242 root INFO 2024-07-29 00:47:01.947662: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:47:02,247 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): logistics.market.yandex.ru:443
+00:47:02,417 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/ HTTP/11" 200 0
+00:47:07,398 charset_normalizer DEBUG Encoding detection on empty bytes, assuming utf_8 intention.
+00:47:22,45 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831929&timeout=20 HTTP/11" 200 23
+00:48:20,942 root INFO Бот запускается...
+00:48:20,945 root INFO Загружен ЛОГ:
+<configparser.ConfigParser object at 0x000001F8D86F4AD0>
+00:48:20,966 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:48:21,237 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getMe HTTP/11" 200 269
+00:48:21,253 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:48:29,281 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=1&timeout=20 HTTP/11" 200 419
+00:48:29,297 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:48:29,514 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3248%7D HTTP/11" 200 807
+00:48:29,546 root INFO 2024-07-29 00:48:29.286648: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:48:29,552 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): logistics.market.yandex.ru:443
+00:48:29,859 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:48:49,359 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831930&timeout=20 HTTP/11" 200 23
+00:50:19,570 root INFO Бот запускается...
+00:50:19,572 root INFO Загружен ЛОГ:
+<configparser.ConfigParser object at 0x000001E2FA8EB140>
+00:50:19,601 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:50:19,894 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getMe HTTP/11" 200 269
+00:50:19,911 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:50:20,118 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=1&timeout=20 HTTP/11" 200 419
+00:50:20,153 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:50:20,377 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3250%7D HTTP/11" 200 807
+00:50:20,397 root INFO 2024-07-29 00:50:20.126156: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:50:20,403 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): logistics.market.yandex.ru:443
+00:50:20,696 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:50:20,888 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:50:20,894 asyncio DEBUG Using proactor: IocpProactor
+00:50:20,989 asyncio DEBUG Get address info logistics.market.yandex.ru:443, type=<SocketKind.SOCK_STREAM: 1>, flags=<AddressInfo.AI_ADDRCONFIG: 1024>
+00:50:20,991 asyncio DEBUG Getting address info logistics.market.yandex.ru:443, type=<SocketKind.SOCK_STREAM: 1>, flags=<AddressInfo.AI_ADDRCONFIG: 1024> took 15.000ms: [(<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 0, '', ('87.250.250.97', 443))]
+00:50:21,43 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001E2FAAD05F0> starts SSL handshake
+00:50:21,50 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001E2FAB77680> starts SSL handshake
+00:50:21,106 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001E2FAAD05F0>: SSL handshake took 63.0 ms
+00:50:21,113 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001E2FAB77680>: SSL handshake took 63.0 ms
+00:50:21,114 asyncio DEBUG <asyncio.TransportSocket fd=2872, family=2, type=1, proto=6, laddr=('192.168.1.158', 8973), raddr=('87.250.250.97', 443)> connected to 87.250.250.97:443: (<asyncio.sslproto._SSLProtocolTransport object at 0x000001E2FADE15B0>, <aiohttp.client_proto.ResponseHandler object at 0x000001E2FADC6E70>)
+00:50:21,128 asyncio DEBUG <asyncio.TransportSocket fd=2844, family=2, type=1, proto=6, laddr=('192.168.1.158', 8974), raddr=('87.250.250.97', 443)> connected to 87.250.250.97:443: (<asyncio.sslproto._SSLProtocolTransport object at 0x000001E2FADE1850>, <aiohttp.client_proto.ResponseHandler object at 0x000001E2FADB5430>)
+00:50:23,20 asyncio WARNING Executing <Task finished name='Task-1' coro=<getOrdersStatuses() done, defined at c:\Users\kozlo\OneDrive\desktop\Zamilovich\asinhrom.py:57> result=None created at c:\Program Files\Python312\Lib\asyncio\runners.py:100> took 1.312 seconds
+00:50:23,37 asyncio DEBUG <_ProactorSocketTransport closing fd=2844> received EOF
+00:50:23,38 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001E2FAB77680> received EOF
+00:50:23,42 asyncio DEBUG <_ProactorSocketTransport closing fd=2872> received EOF
+00:50:23,42 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001E2FAAD05F0> received EOF
+00:50:23,70 asyncio DEBUG Close <ProactorEventLoop running=False closed=False debug=True>
+00:50:23,216 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendDocument?chat_id=5291102003&reply_parameters=%7B%22message_id%22%3A+3250%7D HTTP/11" 200 926
+00:50:23,329 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/editMessageText?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A%D0%97%D0%B0%D0%BA%D0%B0%D0%B7%D1%8B+%D0%B5%D1%81%D1%82%D1%8C+%D0%B2+%D0%9F%D0%98%3A+468135186+488355844%0A%D0%92%D1%80%D0%B5%D0%BC%D1%8F+%D0%B2%D1%8B%D0%BF%D0%BE%D0%BB%D0%BD%D0%B5%D0%BD%D0%B8%D1%8F+%D1%81%D0%BA%D1%80%D0%B8%D0%BF%D1%82%D0%B0%3A3.092257%0A&chat_id=5291102003&message_id=3251 HTTP/11" 200 697
+00:52:12,651 root INFO Бот запускается...
+00:52:12,655 root INFO Загружен ЛОГ:
+<configparser.ConfigParser object at 0x000001D7D2109010>
+00:52:12,682 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:52:13,88 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getMe HTTP/11" 200 269
+00:52:13,125 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:52:13,368 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=1&timeout=20 HTTP/11" 200 419
+00:52:13,440 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): api.telegram.org:443
+00:52:13,725 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendMessage?chat_id=5291102003&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A&reply_parameters=%7B%22message_id%22%3A+3253%7D HTTP/11" 200 807
+00:52:13,783 root INFO 2024-07-29 00:52:13.377700: Взял в работу сообщение от Ruslan🚨 чекаем заказы в ПИ? True
+00:52:13,809 urllib3.connectionpool DEBUG Starting new HTTPS connection (1): logistics.market.yandex.ru:443
+00:52:14,188 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:52:14,372 urllib3.connectionpool DEBUG https://logistics.market.yandex.ru:443 "POST /api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder HTTP/11" 200 None
+00:52:14,374 asyncio DEBUG Using proactor: IocpProactor
+00:52:14,505 asyncio DEBUG Get address info logistics.market.yandex.ru:443, type=<SocketKind.SOCK_STREAM: 1>, flags=<AddressInfo.AI_ADDRCONFIG: 1024>
+00:52:14,506 asyncio DEBUG Getting address info logistics.market.yandex.ru:443, type=<SocketKind.SOCK_STREAM: 1>, flags=<AddressInfo.AI_ADDRCONFIG: 1024> took 0.000ms: [(<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 0, '', ('87.250.250.97', 443))]
+00:52:14,574 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001D7D3039850> starts SSL handshake
+00:52:14,598 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001D7D32BF890> starts SSL handshake
+00:52:14,640 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001D7D3039850>: SSL handshake took 62.0 ms
+00:52:14,643 asyncio DEBUG <asyncio.TransportSocket fd=2796, family=2, type=1, proto=6, laddr=('192.168.1.158', 12650), raddr=('87.250.250.97', 443)> connected to 87.250.250.97:443: (<asyncio.sslproto._SSLProtocolTransport object at 0x000001D7D3563BF0>, <aiohttp.client_proto.ResponseHandler object at 0x000001D7D3542ED0>)
+00:52:14,667 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001D7D32BF890>: SSL handshake took 78.0 ms
+00:52:14,669 asyncio DEBUG <asyncio.TransportSocket fd=2844, family=2, type=1, proto=6, laddr=('192.168.1.158', 12651), raddr=('87.250.250.97', 443)> connected to 87.250.250.97:443: (<asyncio.sslproto._SSLProtocolTransport object at 0x000001D7D3597DD0>, <aiohttp.client_proto.ResponseHandler object at 0x000001D7D34B4A10>)
+00:52:16,311 asyncio WARNING Executing <Task finished name='Task-1' coro=<getOrdersStatuses() done, defined at c:\Users\kozlo\OneDrive\desktop\Zamilovich\asinhrom.py:57> result=None created at c:\Program Files\Python312\Lib\asyncio\runners.py:100> took 1.141 seconds
+00:52:16,326 asyncio DEBUG <_ProactorSocketTransport closing fd=2796> received EOF
+00:52:16,326 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001D7D3039850> received EOF
+00:52:16,328 asyncio DEBUG <_ProactorSocketTransport closing fd=2844> received EOF
+00:52:16,328 asyncio DEBUG <asyncio.sslproto.SSLProtocol object at 0x000001D7D32BF890> received EOF
+00:52:16,362 asyncio DEBUG Close <ProactorEventLoop running=False closed=False debug=True>
+00:52:16,481 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/sendDocument?chat_id=5291102003&reply_parameters=%7B%22message_id%22%3A+3253%7D HTTP/11" 200 927
+00:52:16,651 urllib3.connectionpool DEBUG https://api.telegram.org:443 "POST /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/editMessageText?text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%2C+Ruslan%F0%9F%9A%A8%2C+%D0%B2%D0%B7%D1%8F%D0%BB+%D0%B2+%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%83%0A%D0%97%D0%B0%D0%BA%D0%B0%D0%B7%D1%8B+%D0%B5%D1%81%D1%82%D1%8C+%D0%B2+%D0%9F%D0%98%3A+%5B%7B%27externalOrderId%27%3A+%27468135186%27%2C+%27createOrderDateTime%27%3A+%272024-06-01T17%3A28%3A22.079093%27%2C+%27arrivedToSoDateTime%27%3A+%272024-07-22T14%3A31%3A39.95399%27%2C+%27ffStatus%27%3A+%27ORDER_SHIPPED_TO_SO_FF%27%2C+%27status%27%3A+%27SHIPPED%27%2C+%27cellName%27%3A+%27%27%2C+%27weightAndDimensions%27%3A+%7B%27width%27%3A+11%2C+%27height%27%3A+16%2C+%27length%27%3A+2%2C+%27weight%27%3A+0.1%7D%2C+%27multiPlace%27%3A+True%2C+%27places%27%3A+%5B%7B%27mainPartnerCode%27%3A+%27468135186-1%27%2C+%27status%27%3A+%27SHIPPED_DIRECT%27%2C+%27placeWeightAndDimensions%27%3A+%7B%27width%27%3A+11%2C+%27height%27%3A+16%2C+%27length%27%3A+2%2C+%27weight%27%3A+0%7D%7D%5D%2C+%27isSeparable%27%3A+True%7D%2C+%7B%27externalOrderId%27%3A+%27488355844%27%2C+%27createOrderDateTime%27%3A+%272024-07-04T16%3A58%3A44.164528%27%2C+%27arrivedToSoDateTime%27%3A+%272024-07-24T23%3A58%3A37.508317%27%2C+%27ffStatus%27%3A+%27ORDER_SHIPPED_TO_SO_FF%27%2C+%27status%27%3A+%27SHIPPED%27%2C+%27cellName%27%3A+%27%27%2C+%27weightAndDimensions%27%3A+%7B%27width%27%3A+9%2C+%27height%27%3A+17%2C+%27length%27%3A+3%2C+%27weight%27%3A+1.01%7D%2C+%27multiPlace%27%3A+True%2C+%27places%27%3A+%5B%7B%27mainPartnerCode%27%3A+%27488355844-1%27%2C+%27status%27%3A+%27SHIPPED_DIRECT%27%2C+%27placeWeightAndDimensions%27%3A+%7B%27width%27%3A+9%2C+%27height%27%3A+17%2C+%27length%27%3A+3%2C+%27weight%27%3A+1.01%7D%7D%5D%7D%5D%0A%D0%92%D1%80%D0%B5%D0%BC%D1%8F+%D0%B2%D1%8B%D0%BF%D0%BE%D0%BB%D0%BD%D0%B5%D0%BD%D0%B8%D1%8F+%D1%81%D0%BA%D1%80%D0%B8%D0%BF%D1%82%D0%B0%3A3.107173%0A&chat_id=5291102003&message_id=3254 HTTP/11" 200 1648
+00:52:33,494 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
+00:52:53,578 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
+00:53:13,649 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
+00:53:33,719 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
+00:53:53,796 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
+00:54:13,870 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
+00:54:33,943 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
+00:54:54,14 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
+00:55:14,83 urllib3.connectionpool DEBUG https://api.telegram.org:443 "GET /bot6946675945:AAGPRp65Pi7rMoKGenlmKxGhOAKjKlU3dPE/getUpdates?offset=87831932&timeout=20 HTTP/11" 200 23
