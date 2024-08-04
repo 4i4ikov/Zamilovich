@@ -1,32 +1,139 @@
-# import datetime
-# import asyncio
-from datetime import datetime
-# import aiohttp
-# import json
+import asyncio
 import logging
-# import sys
 import tempfile
-import time
+import aiohttp
+import pandas as pd
+from styleframe import StyleFrame, Styler, utils
 import requests
-# from pprint import pprint
-# from bs4 import BeautifulSoup
 import telebot
+import telebot.types as types
 import re
-# import pandas as pd
-# from requests.exceptions import RequestException
 import urllib3
-import asinhrom as ass
 import configparser
 import warnings
+import json
 from pyzbar.pyzbar import decode as pyzdecode
 from PIL import Image 
 import cv2
 from pylibdmtx.pylibdmtx import decode as pydecode
-from updatesk import updatesk
+from datetime import datetime
 
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+async def gather_with_concurrency(n, *tasks):
+    semaphore = asyncio.Semaphore(n)
+    async def sem_task(task):
+        async with semaphore:
+            return await task
+    return await asyncio.gather(*(sem_task(task) for task in tasks))
 
+
+async def get_async(url, session, results):
+    async with session.get(url) as response:
+        i = url.split('=')[-1]
+        if response.status == 200:
+            obj = await response.read()
+            results[i] = obj
+
+default = [
+    "437665887",
+    "437667076",
+    "PVZ_FBS_RET_873907",
+    "437564522",
+    "437665576",
+    "LO-361255578",
+]
+async def getSortablesScanlog(sortableIds):
+    session = aiohttp.ClientSession(cookies=cookies, headers=headers)
+    results = {}
+
+    urls = [f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/sortable/scanlog?sortableId={i}" for i in sortableIds]
+
+    conc_req = 40
+    
+    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
+    await session.close()
+    API_TOKEN = config.get("BOT","API_TOKEN")
+
+    bot = telebot.TeleBot(API_TOKEN)
+    for i, j in results.items():
+        with open(f"./papka/{i}.xlsx",'wb') as f: 
+            f.write(j)
+            bot.send_document(-4143093216,j,visible_file_name=f"{i}.xlsx")
+    return results.items()
+
+async def getOrdersScanlog(sortableIds):
+    session = aiohttp.ClientSession(cookies=cookies, headers=headers)
+    results = {}
+
+    urls = [f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/orders/{i}/scanLog.xlsx" for i in sortableIds]
+
+    conc_req = 40
+
+    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
+    await session.close()
+    all_file_frames = []
+    for j in results.values():
+        tab = pd.read_excel(j)
+        all_file_frames.append(tab)
+    all_frame = pd.concat(all_file_frames)
+    all_frame.reset_index(drop = True,inplace = True)
+    excelWriter = StyleFrame.ExcelWriter('scans.xlsx')
+    styler_obj=Styler(
+        # bg_color=utils.colors.blue,
+        bold=False,
+        font_size=8
+    )
+    styledDataFrame = StyleFrame(all_frame,styler_obj=styler_obj)
+    styledDataFrame.set_column_width(columns=styledDataFrame.columns,width=13) # type: ignore
+    best = styledDataFrame.columns.values.tolist()
+    styledDataFrame.apply_headers_style(Styler(bold=False, font_size=8))
+    styledDataFrame.to_excel(excel_writer=excelWriter, row_to_add_filters=0,index=False)
+    excelWriter.close()
+    print('Скачал сканлоги, дальше осталось их скинуть..')
+
+async def getOrdersStatuses(orders):
+    session = aiohttp.ClientSession(cookies=cookies, headers=headers)
+    results = {}
+    urls = [f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/sortables/download?orderExternalId={i}" for i in orders]
+    conc_req = 40
+    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
+    await session.close()
+
+    all_file_frames = []
+    for j in results.values():
+        tab = pd.read_excel(j)
+        all_file_frames.append(tab)
+    all_frame = pd.concat(all_file_frames)
+    
+    all_frame.to_excel('orders.xlsx',index=False)
+
+def getOrd(orders):
+    asyncio.run(getOrdersStatuses(orders), debug=True)
+
+def getScan(orders):
+    asyncio.run(getOrdersScanlog(orders), debug=True)
+
+async def getFile(urls):
+    session = aiohttp.ClientSession(cookies=cookies, headers=headers)
+    results = {}
+    conc_req = 40
+    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
+    await session.close()
+    all_file_frames = []
+    for j in results.values():
+        tab = pd.read_excel(j)
+        all_file_frames.append(tab)
+    all_frame = pd.concat(all_file_frames)
+    all_frame.to_excel('AcceptedButNotSorted.xlsx',index=False)
+def getAccepterdButNotSorted(urls):
+    asyncio.run(getFile(urls))
+
+
+
+
+
+
+
+# Setup logging
 logging.basicConfig(filename="log.log",
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
@@ -34,40 +141,41 @@ logging.basicConfig(filename="log.log",
                     level=logging.DEBUG,
                     encoding="utf-8")
 logger = logging.getLogger(__name__)
-
-logger.addHandler(ch)
 logging.info("Бот запускается...")
-# EMOJI = ["👎","👍", "🤔"]
 
+# Disable warnings
+# warnings.filterwarnings("ignore")
+# urllib3.disable_warnings()
 
-warnings.filterwarnings("ignore")
+# Load configuration
 config = configparser.ConfigParser()
-urllib3.disable_warnings()
 config.read("config.ini")
 logging.info(f"Загружен ЛОГ:\n{config}")
-cookies = {
-    'Session_id': config.get("Session","Session_id"),
-}
-headers = {
-    'sk': config.get('Session','sk'),
-}
+
+# Setup requests session
+cookies = {'Session_id': config.get("Session", "Session_id")}
+headers = {'sk': config.get('Session', 'sk')}
 requestsSession = requests.Session()
 requestsSession.verify = False
 requestsSession.cookies.update(cookies)
 requestsSession.headers.update(headers)
 
+def updatesk (cookies):
+    response = requests.patch('https://logistics.market.yandex.ru/api/session',  cookies=cookies, verify=False)
+    sk = ""
+    if response.status_code==200:
+        return response.json().get("user").get("sk")
+
+# Compile regular expressions
+ORDERS_REGEX = re.compile(r"^LO-\d{9}|^\d{9}|^VOZ_FBS_\d{8}|^PVZ_FBS_RET_\d{6}|^VOZ_FF_\d{8}|^VOZ_MK_\d{7}|^PVZ_FBY_RET_\d{6}", re.MULTILINE)
+PALLET_REGEX = re.compile(r"^F1.{18}$", re.MULTILINE)
+TOTE_REGEX = re.compile(r"^F2.{18}$", re.MULTILINE)
 
 def getOrder(order):
     json_data = {
-        "params": [
-            {
-                "sortingCenterId": 1100000040,
-                "orderId": order,
-            },
-        ],
+        "params": [{"sortingCenterId": 1100000040, "orderId": order}],
         "path": f"/sorting-center/1100000040/orders/{order}",
     }
-
     response = requestsSession.post(
         "https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder",
         json=json_data,
@@ -75,41 +183,28 @@ def getOrder(order):
     )
     if response.status_code != 200:
         sk = updatesk(cookies)
-        config.set("Session","sk",sk)
-        requestsSession.headers.update({
-    'sk': config.get('Session','sk'),
-})
-        with open('config.ini','w', encoding="utf8") as configfile:
+        config.set("Session", "sk", sk)
+        requestsSession.headers.update({'sk': config.get('Session', 'sk')})
+        with open('config.ini', 'w', encoding="utf8") as configfile:
             config.write(configfile)
         response = requestsSession.post(
-        "https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder",
-        json=json_data,
-        verify=False
-    )
+            "https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/orders/resolveOrder:resolveOrder",
+            json=json_data,
+            verify=False
+        )
     if "data" in response.json()["results"][0].keys():
         return response.json()["results"][0]["data"]
     else:
         return False
 
-
 def getSortablesOfOrder(order):
     json_data = {
-        "params": [
-            {
-                "sortableStatuses": [],
-                "stages": [],
-                "orderExternalId": order,
-                "inboundIdTitle": "",
-                "outboundIdTitle": "",
-                "groupingDirectionId": "",
-                "groupingDirectionName": "",
-                "sortingCenterId": 1100000040,
-                "page": 0,
-                "size": 20,
-                "sortableTypes": [],
-                "crossDockOnly": False,
-            },
-        ],
+        "params": [{
+            "sortableStatuses": [], "stages": [], "orderExternalId": order,
+            "inboundIdTitle": "", "outboundIdTitle": "", "groupingDirectionId": "",
+            "groupingDirectionName": "", "sortingCenterId": 1100000040, "page": 0,
+            "size": 20, "sortableTypes": [], "crossDockOnly": False,
+        }],
         "path": "/sorting-center/1100000040/sortables?sortableTypes=&sortableStatuses=&sortableStatusesLeafs=&orderExternalId=423501618&inboundIdTitle=&outboundIdTitle=&groupingDirectionId=&groupingDirectionName=",
     }
     sortables = requestsSession.post(
@@ -118,251 +213,226 @@ def getSortablesOfOrder(order):
         verify=False
     )
     if sortables.status_code == 200:
-        sortables = sortables.json()["results"][0]["data"]["content"]
-
-    return sortables
-
+        return sortables.json()["results"][0]["data"]["content"]
+    return []
 
 def getOrders(inputstring):
-    RegularExpressionForOrders = r"^LO-\d{9}|^\d{9}|^VOZ_FBS_\d{8}|^PVZ_FBS_RET_\d{6}|^VOZ_FF_\d{8}|^VOZ_MK_\d{7}|^PVZ_FBY_RET_\d{6}"
-    Orders = re.findall(RegularExpressionForOrders, inputstring, re.MULTILINE)
-    return Orders
-
+    return ORDERS_REGEX.findall(inputstring)
 
 def getPallets(inputstring):
-    RegularExpressionForPallets = r"^F1.{18}$"
-    Pallets = re.findall(RegularExpressionForPallets, inputstring, re.MULTILINE)
-    return Pallets
-
+    return PALLET_REGEX.findall(inputstring)
 
 def getTOTEs(inputstring):
-    RegularExpressionForTOTEs = r"^F2.{18}$"
-    TOTes = re.findall(RegularExpressionForTOTEs, inputstring, re.MULTILINE)
-    return TOTes
+    return TOTE_REGEX.findall(inputstring)
 
 ALLOW_USERS = [
-    5291102003,
-    1063498880,
-    6478014074,
-    1019990315,
-    1133129646,
-    6946675945,
-    1641769105,
-    6478014074,
-    1213362983
+    5291102003, 1063498880, 6478014074, 1019990315, 1133129646,
+    6946675945, 1641769105, 6478014074, 1213362983
 ]
 
-
-API_TOKEN = config.get("BOT","API_TOKEN")
-print ("Запуск бота")
-
-# mistakes_bot = telebot.TeleBot("7216110457:AAEs2vp5onOeKWMZHwaiKSKrlpiozZibeKU")
+API_TOKEN = config.get("BOT", "API_TOKEN")
+print("Запуск бота")
 bot = telebot.TeleBot(API_TOKEN)
-# Распознать ШК заказов по фото
-@bot.message_handler(content_types=['photo'], func=lambda message: message.chat.id == -904145156) 
+
+@bot.message_handler(commands=['stop'])
+def stop(message):
+    bot.stop_bot()
+
+# @bot.message_handler(content_types=['photo'], func=lambda message: message.chat.id == -904145156)
 def photo(message):
-    # if (message.caption and "qr" in message.caption):
     print('получил изображение')
-    # bot.set_message_reaction(message.chat.id,message.id,[telebot.types.ReactionTypeEmoji(EMOJI[2])])
     fileID = message.photo[-1].file_id
     file_info = bot.get_file(fileID)
-    
     downloaded_file = bot.download_file(file_info.file_path)
-    
-    
-    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
-    temp.write(downloaded_file)
-    temp.close()
 
-    with open(temp.name, mode='rb') as f:
-        image = cv2.imread(temp.name)
-    try:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # cv2.imwrite(temp[1].name,gray)
-    except Exception as err: print(err)
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        temp.write(downloaded_file)
+        temp_path = temp.name
+
+    if decoded := scanBarcode(temp_path):
+        forward = bot.forward_message(chat_id=-1002205631792, from_chat_id=message.chat.id, message_id=message.id, message_thread_id=88)
+        bot.reply_to(forward, '\n'.join(decoded))
     else:
-        gray = image
-        # cv2.imwrite(temp[1].name,gray)
+        print("не распознал\n")
 
-    barcodeScanners = []
-    barcodeScanners.append(pyzdecode(gray))
+def scanBarcode(temp_path):
+    image = cv2.imread(temp_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image is not None else image
+
+    barcodeScanners = [pyzdecode(gray)]
     decoder = cv2.QRCodeDetector()
     retval, decoded_info, points, straight_qrcode = decoder.detectAndDecodeMulti(gray)
-    
-    barcodeScanners.append(decoded_info)
-
+    barcodeScanners.append(decoded_info) # type: ignore
     barcodeScanners.append(pydecode(gray))
-
-    print(barcodeScanners)
     decoded = set()
     if barcodeScanners[0]:
-        for qrcode in barcodeScanners[0]:decoded.add( qrcode.data.decode())
+        for qrcode in barcodeScanners[0]:
+            decoded.add(qrcode.data.decode())
     if retval:
         for qrcode in barcodeScanners[1]:
             decoded.add(qrcode)
     if barcodeScanners[2]:
-        for qrcode in barcodeScanners[2]:decoded.add( qrcode.data.decode())
+        for qrcode in barcodeScanners[2]:
+            decoded.add(qrcode.data.decode())
+    return decoded
 
-    # with open("image.jpg", 'wb+') as new_file:
-    #     new_file.write(downloaded_file)
-    # bot.send_photo(chat_id=message.chat.id,message_thread_id=message.message_thread_id,reply_to_message_id=message.message_id,photo=open("gray.png","rb"))
-    if (decoded):
-        # bot.set_message_reaction(message.chat.id,message.id,[telebot.types.ReactionTypeEmoji(EMOJI[1])])
-        forward = bot.forward_message(chat_id=-1002205631792,from_chat_id=message.chat.id,message_id=message.id,message_thread_id=88)
-        bot.reply_to(forward,f"{'\n'.join(decoded)}")
-    else:
-        print("не распознал\n")
-        # forward = bot.forward_message(chat_id=-1002205631792,from_chat_id=message.chat.id,message_id=message.id,message_thread_id=94)
-        # bot.reply_to(forward,f"Не смог распознать.")
-
-# Узнать ID текущего чата
-@bot.message_handler(commands=['id']) # Узнать ID чата
-def echo_message(message):
-    bot.reply_to(message,f"Chat_id: {message.chat.id}\nThread_id: {message.message_thread_id}")
+@bot.message_handler(commands=['id'])
+def echo_id(message):
+    bot.reply_to(message, f"Chat_id: {message.chat.id}\nThread_id: {message.message_thread_id}")
 
 
-@bot.message_handler(commands=['scans']) #Выгрузка заказов из ПИ
-def echo_message_scanlog(msg): 
+
+def check_message(message):
+    return message.chat.type == 'private' or message.chat.id == -6946675945
+
+
+@bot.message_handler(func=check_message)
+def buttons(message):
+    markup = get_markup(message)
+    bot.send_message(chat_id=message.chat.id,message_thread_id=message.message_thread_id, text="Что вы хотите получить?", reply_markup=markup)
+
+def get_markup(message):
+    callback_data = {
+        "m" :message.id,
+        "u" : message.from_user.id,
+        "t": "/scans",
+    }
+
+    scan_logs_button = types.InlineKeyboardButton(text="Сканлоги",callback_data=json.dumps(callback_data))
+    callback_data["t"] = "/bot"
+    statuses_button = types.InlineKeyboardButton(text="Статусы",callback_data=json.dumps(callback_data))
+    callback_data["t"] = "/vgh"
+    vgh_button = types.InlineKeyboardButton(text="ВГХ",callback_data=json.dumps(callback_data))
+    markup = types.InlineKeyboardMarkup()
+    markup.add(scan_logs_button,statuses_button,vgh_button)
+    return markup
+    
+    
+def request_scanlogs(message):
+    bot.send_message(chat_id=message.chat.id,message_thread_id=message.message_thread_id,text="Отправьте номера заказов для получения сканлогов :)")
+    bot.register_next_step_handler(message, echo_message_scanlog)
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    try:
+        if call.message:
+            data_json = json.loads(call.data)
+            msg = bot.forward_message(chat_id=-4283452246,from_chat_id=data_json["u"],message_id=data_json["m"])
+            if data_json["t"] == "/scans":
+                echo_message_scanlog(msg,data_json)
+            print(data_json)
+    except Exception as e:
+        print(repr(e))
+
+
+
+
+@bot.message_handler(commands=['scans'])
+
+def echo_message_scanlog(msg, reply_msg = None):
+    if reply_msg:
+        msg.chat.id = reply_msg["u"]
+        msg.id = reply_msg["m"]
+        msg.message_id = reply_msg["m"]
     st = datetime.now()
-    msg.text = msg.text.replace(',','\n').replace(' ','\n').replace('(','\n').replace(')','\n')
-    # bot.reply_to(message, f"Привет, {message.from_user.full_name}, взял в работу, время {st}\nТвой user_id: {message.from_user.id}\n")
+    MESSAGE = format_input_message(msg.text)
     my_msg = bot.reply_to(msg, f"Привет, {msg.from_user.full_name}, выгружаю сканлоги\n")
-    # reply = "ты написал мне: \"" + message.text + "\" длина твоего сообщения: " + str (len(message.text) )   + "\n"
-    Orders = getOrders(msg.text)
-    Pallets = getPallets(msg.text)
-    TOTEs = getTOTEs(msg.text)
-    returnMessage = f""
+    Orders, Pallets, TOTEs = get_all_types_of_places(MESSAGE)
+    returnMessage = ""
     canUserUseMyBot = msg.from_user.id in ALLOW_USERS
 
     if canUserUseMyBot:
-        checksortables = not ("/no" in msg.text)
-        logging.info(f"{st}: Взял в работу сообщение от {msg.from_user.full_name} чекаем заказы в ПИ? {checksortables}")
-        if Orders:
-            Orders = set(Orders)
-            normalorders = set ()
-            notnormalorders = set()
-            for order in Orders:
-                if checksortables:
-                    ord = getOrder(order)
-                else:
-                    ord = True
-                if ord: normalorders.add(order) 
-                else: notnormalorders.add(order)
-            if not normalorders:
-                returnMessage += "Вы скинули только засылы?? зачем?????\n"
-            else:
-                ass.getScan(normalorders)
-                bot.send_document(chat_id=msg.chat.id,reply_to_message_id=msg.message_id,document=open("scans.xlsx",'rb'),visible_file_name=f"Scans.xlsx")
-                if checksortables: returnMessage += f"Заказы есть в ПИ: {' '.join(normalorders)}\n"
-                else: returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за присутствия команды /no\n"
-            if notnormalorders:
-                returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"  
+        # checksortables = "/no" not in MESSAGE
+        # logging.info(f"{st}: Взял в работу сообщение от {msg.from_user.full_name} чекаем заказы в ПИ? {checksortables}")
+        # if Orders:
+        #     Orders = set(Orders)
+        #     normalorders = set()
+        #     notnormalorders = set()
+        #     for order in Orders:
+        #         buffer_order = getOrder(order) if checksortables else True
+        #         if buffer_order:
+        #             normalorders.add(order)
+        #         else:
+        #             notnormalorders.add(order)
+        #     if not normalorders:
+        #         returnMessage += "Вы скинули только засылы?? зачем?????\n"
+        #     else:
+        getScan(Orders)
+        bot.send_document(chat_id=msg.chat.id, reply_to_message_id=msg.message_id, document=open("scans.xlsx", 'rb'), visible_file_name="Scans.xlsx")
+                # if checksortables:
+                #     returnMessage += f"Заказы есть в ПИ: {' '.join(normalorders)}\n"
+                # else:
+                #     returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за присутствия команды /no\n"
+            # if notnormalorders:
+            #     returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
         if TOTEs:
-            TOTEs = set(TOTEs)
-            returnMessage += f"ТОТы: {str(TOTEs)}\n"
+            returnMessage += f"ТОТы: {TOTEs}\n"
         if Pallets:
-            Pallets = set(Pallets)
-            returnMessage += f"Паллеты: {str(Pallets)}\n"
-    else: returnMessage += f"Ты не можешь взаимодействовать с ботом, обратись к @N0no0no\n {msg.from_user.id}"
-    # bot.send_document(returnMessage,)
-    returnMessage += f"Время выполнения скрипта:{(datetime.now()-st).total_seconds()}\n"
+            returnMessage += f"Паллеты: {Pallets}\n"
+    else:
+        returnMessage += f"Ты не можешь взаимодействовать с ботом, обратись к @N0no0no\n {msg.from_user.id}"
+    returnMessage += f"Время выполнения скрипта:{(datetime.now() - st).total_seconds()}\n"
     if len(returnMessage) > 4096:
         for x in range(0, len(returnMessage), 4096):
-                bot.reply_to(msg, '{}'.format(returnMessage[x:x + 4096]))
-    else: bot.edit_message_text(chat_id=my_msg.chat.id,message_id=my_msg.message_id, text=f'{my_msg.text}\n{returnMessage}')   
+            bot.reply_to(msg, f'{returnMessage[x:x + 4096]}')
+    else:
+        bot.edit_message_text(chat_id=my_msg.chat.id, message_id=my_msg.message_id, text=returnMessage)
 
+def get_all_types_of_places(MESSAGE):
+    Orders = set(getOrders(MESSAGE))
+    Pallets = getPallets(MESSAGE)
+    TOTEs = getTOTEs(MESSAGE)
+    return Orders, Pallets, TOTEs
 
-# Выгрузка заказов из ПИ
-@bot.message_handler(func=lambda message: message.from_user.id == message.chat.id) #Выгрузка заказов из ПИ
-def echo_message_bot(msg): 
-    st = datetime.now()
-    msg.text = msg.text.replace(',','\n').replace(' ','\n').replace('(','\n').replace(')','\n')
-    # bot.reply_to(message, f"Привет, {message.from_user.full_name}, взял в работу, время {st}\nТвой user_id: {message.from_user.id}\n")
+@bot.message_handler(func=lambda message: message.from_user.id == message.chat.id)
+def echo_message_bot(msg):
+    START_TIME = datetime.now()
+    MESSAGE = format_input_message(msg.text)
     my_msg = bot.reply_to(msg, f"Привет, {msg.from_user.full_name}, взял в работу\n")
-    # reply = "ты написал мне: \"" + message.text + "\" длина твоего сообщения: " + str (len(message.text) )   + "\n"
-    Orders = getOrders(msg.text)
-    Pallets = getPallets(msg.text)
-    TOTEs = getTOTEs(msg.text)
-    returnMessage = f""
+    Orders, Pallets, TOTEs = get_all_types_of_places(MESSAGE)
+    returnMessage = ""
     canUserUseMyBot = msg.from_user.id in ALLOW_USERS
 
     if canUserUseMyBot:
-        checksortables = not ("/no" in msg.text)
-        logging.info(f"{st}: Взял в работу сообщение от {msg.from_user.full_name} чекаем заказы в ПИ? {checksortables}")
+        checksortables = "/no" not in MESSAGE
+        logging.info(f"{START_TIME}: Взял в работу сообщение от {msg.from_user.full_name} чекаем заказы в ПИ? {checksortables}")
         if Orders:
             Orders = set(Orders)
-            normalorders = set ()
+            normalorders = set()
             notnormalorders = set()
             for order in Orders:
-                if checksortables:
-                    ord = getOrder(order)
+                buffered_order = getOrder(order) if checksortables else True
+                if buffered_order:
+                    normalorders.add(order)
                 else:
-                    ord = True
-                if ord: normalorders.add(order) 
-                else: notnormalorders.add(order)
+                    notnormalorders.add(order)
             if not normalorders:
                 returnMessage += "Вы скинули только засылы?? зачем?????\n"
             else:
-                ass.getOrd(normalorders)
-                bot.send_document(chat_id=msg.chat.id,reply_to_message_id=msg.message_id,document=open("orders.xlsx",'rb'),visible_file_name=f"Orders.xlsx")
-                if checksortables: returnMessage += f"Заказы есть в ПИ: {' '.join(normalorders)}\n"
-                else: returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за присутствия команды /no\n"
+                getOrd(normalorders)
+                bot.send_document(chat_id=msg.chat.id, reply_to_message_id=msg.message_id, document=open("orders.xlsx", 'rb'), visible_file_name="Orders.xlsx")
+                if checksortables:
+                    returnMessage += f"Заказы есть в ПИ: {' '.join(normalorders)}\n"
+                else:
+                    returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за присутствия команды /no\n"
             if notnormalorders:
-                returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"  
+                returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
         if TOTEs:
-            TOTEs = set(TOTEs)
-            returnMessage += f"ТОТы: {str(TOTEs)}\n"
+            returnMessage += f"ТОТы: {TOTEs}\n"
         if Pallets:
-            Pallets = set(Pallets)
-            returnMessage += f"Паллеты: {str(Pallets)}\n"
-    else: returnMessage += f"Ты не можешь взаимодействовать с ботом, обратись к @N0no0no\n {msg.from_user.id}"
-    # bot.send_document(returnMessage,)
-    returnMessage += f"Время выполнения скрипта:{(datetime.now()-st).total_seconds()}\n"
+            returnMessage += f"Паллеты: {Pallets}\n"
+    else:
+        returnMessage += f"Ты не можешь взаимодействовать с ботом, обратись к @N0no0no\n {msg.from_user.id}"
+    returnMessage += f"Время выполнения скрипта:{(datetime.now() - START_TIME).total_seconds()}\n"
     if len(returnMessage) > 4096:
         for x in range(0, len(returnMessage), 4096):
-                bot.reply_to(msg, '{}'.format(returnMessage[x:x + 4096]))
-    else: bot.edit_message_text(chat_id=my_msg.chat.id,message_id=my_msg.message_id, text=f'{my_msg.text}\n{returnMessage}')   
-     
-    # if Orders:
-    #     Orders = set(Orders)
-    #     for i in Orders:
-    #         reply = ""
-    #         Order = str(i)
-    #         sortables = getSortablesOfOrder(Order)
-    #         # pprint(sortables)
-    #         getOrd = getOrder(Order)
-    #         reply += Order + "\n"
+            bot.reply_to(msg, f'{returnMessage[x:x + 4096]}')
+    else:
+        bot.edit_message_text(chat_id=my_msg.chat.id, message_id=my_msg.message_id, text=returnMessage)
 
-    #         if getOrd != "" :
-    #             wgh = getOrd['weightAndDimensions']
-    #             reply += f"Статус: {getOrd["ffStatus"]}\nВГХ: {wgh["width"]}x{wgh["height"]}x{wgh["length"]}, вес: {wgh["weight"]}кг\n"
-    #         else: reply += "Заказ не найден в ПИ\n"
-    #         SortablesCount = 0
-    #         for sortable in sortables:
-    #              if "orderExternalId" in sortable.keys() and sortable["orderExternalId"].lower() == Order.lower():
-    #                 SortablesCount += 1
-    #                 inside = ""
-    #                 for i in sortable.keys():
-    #                     match i:
-    #                         case "cellName":
-    #                             inside = " - " + sortable["cellName"]
-    #                         case "lotExternalId":
-    #                             inside = " - " + sortable["lotExternalId"]
+def format_input_message(text):
+    return text.replace(',', '\n').replace(' ', '\n').replace('(', '\n').replace(')', '\n')
 
-    #                 reply += f"{sortable["sortableBarcode"]} - {sortable["stageDisplayName"]}{inside}\n"
-    #         if not SortablesCount:
-    #             reply += f"Грузоместа не найдены"
-    #         bot.reply_to(message, reply)
-# debug = False
-# if not debug:
-#     while True:
-#         try:
-#             logging.info("Бот запущен, ребята, работает!!1")
-#             bot.polling()
-#         except Exception as err:
-#             print(err)
-            
-#             # mistakes_bot.send_message(-2008327465,f"{err}")
-#             time.sleep(10)
-#             print(f"{"*"*30} Reconnecting.")
-bot.infinity_polling(timeout=120, long_polling_timeout = 5)
+
+bot.polling()
+# bot.infinity_polling(timeout=120, long_polling_timeout=5)
