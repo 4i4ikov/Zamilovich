@@ -27,16 +27,16 @@ today = str(date.today())
 # orders = ['456427178','463341438']
 file = open("input.txt","r")
 data = file.read()
-orders = data.split("\n")
-orders = set(orders)
+sortables = data.split("\n")
+sortables = set(sortables)
 UrlForRequest = 'https://logistics.market.yandex.ru/api/resolve/?'
-UrlForRequest +='&r=sortingCenter/orders/resolveOrder:resolveOrder' * len(orders)#Панель грузомест
+UrlForRequest +='&r=sortingCenter/sortables/resolveSortableHistory:resolveSortableHistory' * len(sortables)#Панель грузомест
 
 json1_datas = [
     {
     'sortingCenterId': 1100000040,
-    'orderId': f'{order}',
-    } for order in orders
+    'id': f'{sortable}',
+    } for sortable in sortables
 ]
 
 json_data = { # 
@@ -65,7 +65,9 @@ if response.status_code == 400:
     )
     
 panda = pd.json_normalize(response.json()["results"])
-
+jsonme = response.json()
+with open("jsomne.json","w+") as f:
+    json.dump(jsonme,f)
 # panda.to_json("results2.json",index=False)
 panda.to_excel("results2.xlsx",index=False)
 strings = {
