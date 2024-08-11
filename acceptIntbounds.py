@@ -1,7 +1,7 @@
 import configparser
 from itertools import batched
 from time import sleep
-import updatesk as updatesk
+# import updatesk as updatesk
 from datetime import datetime, time,date, timedelta
 import json
 import logging
@@ -18,6 +18,15 @@ cookies = {
 headers = {
     'sk': config.get('Session','sk'),
 }
+def updatesk (cookies,config,requestsSession):
+    response = requests.patch('https://logistics.market.yandex.ru/api/session',  cookies=cookies, verify=False)
+    sk = ""
+    if response.status_code==200:
+        sk = response.json().get("user").get("sk")
+        headers = {'sk': sk}
+        requestsSession.headers.update(headers)
+        config.set("Session", "sk", sk)
+        return sk
 
 main_session = requests.Session()
 main_session.cookies.update(cookies)
@@ -25,7 +34,7 @@ main_session.headers.update(headers)
 
 today = date.today()
 tomorrow = today + timedelta(days=1)
-yesterday = today - timedelta(days=2)
+yesterday = today - timedelta(days=1)
 
 dateToAccept = str(yesterday)
 def delete_all_special_chars(input_string):
@@ -47,11 +56,16 @@ def download_send_discrepancy_acts(config, cookies, headers, main_session, dateT
 }
     response = main_session.post(
     'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolveInboundList:resolveInboundList',
-    cookies=cookies,
-    headers=headers,
     json=json_data,
     verify=False
 )
+    if response.status_code != 200:
+        sk = updatesk(cookies,config,main_session)
+        response = main_session.post(
+        'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolveInboundList:resolveInboundList',
+        json=json_data,
+        verify=False
+        )
 
     responseFormat = response.json()["results"][0]["data"]["content"]
     pdInboundsList = pd.json_normalize(responseFormat, max_level=3)
@@ -64,8 +78,8 @@ def download_send_discrepancy_acts(config, cookies, headers, main_session, dateT
         DISCREPANCY_ACT_id = row["documents"][0]["id"]
         inbound_id = row["id"]
         url = f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/inbounds/document?type=DISCREPANCY_ACT&id={DISCREPANCY_ACT_id}&inboundId={inbound_id}"
-        
-        urls[delete_all_special_chars(f"{row["supplierName"]} {row["inboundExternalId"]}")] = url
+        if row["movementType"] != "LINEHAUL":
+            urls[delete_all_special_chars(f"{row["supplierName"]} {row["inboundExternalId"]}")] = url
         pdFilteredList.at[index,"url"] = url
 
     pdFilteredList.to_excel("inboundsToTest.xlsx",index=False)
@@ -75,7 +89,7 @@ def download_send_discrepancy_acts(config, cookies, headers, main_session, dateT
     chat_id = -4283452246
     message_thread_id=None
     bot.send_document(chat_id=chat_id,document=open("inboundsToTest.xlsx",'rb'),visible_file_name=f"TEST.xlsx",message_thread_id=message_thread_id)
-    ass.getDocuments(urls)
+    ass.getDocuments(urls,dateToAccept)
     # bot.send_document(chat_id=chat_id,document=open("files.xlsx",'rb'),visible_file_name=f"Файлики.xlsx",message_thread_id=message_thread_id)
 
 download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAccept)

@@ -1,5 +1,6 @@
 import asyncio
 from os import system
+import os
 import re
 import aiohttp
 import pandas as pd
@@ -69,11 +70,11 @@ async def getOrdersScanlog(sortableIds):
     urls = [f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/orders/{i}/scanLog.xlsx" for i in sortableIds]
 
     conc_req = 40
-    
+
     await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
     await session.close()
     all_file_frames = []
-    for i, j in results.items():
+    for j in results.values():
         tab = pd.read_excel(j)
         all_file_frames.append(tab)
     all_frame = pd.concat(all_file_frames)
@@ -87,9 +88,9 @@ async def getOrdersStatuses(orders):
     conc_req = 40
     await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
     await session.close()
-    
+
     all_file_frames = []
-    for i, j in results.items():
+    for j in results.values():
         tab = pd.read_excel(j)
         all_file_frames.append(tab)
     all_frame = pd.concat(all_file_frames)
@@ -101,19 +102,21 @@ def getOrd(orders):
 def getScan(orders):
     asyncio.run(getOrdersScanlog(orders), debug=True)
 
-def getDocuments(urls):
-    asyncio.run(getFile(urls),debug=True)
+def getDocuments(urls,day):
+    asyncio.run(getFile(urls,day),debug=True)
 
-async def getFile(urls):
+async def getFile(urls,day):
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
     conc_req = 40
     await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls.values()])
     await session.close()
     all_file_frames = []
+    os.mkdir("rashodilis")
+    os.mkdir("rashodilis/{0}".format(day))
     # writer = pd.ExcelWriter("files.xlsx", engine = 'openpyxl')
     for i, j in results.items():
-        with open(f'./rashodilis/{i}',"wb+") as f:
+        with open(f'./rashodilis/{day}/{i}',"wb+") as f:
             f.write(j)
         # tab = pd.read_excel(j)
         # tab.to_excel(writer,sheet_name=f"test{i}")
@@ -123,7 +126,7 @@ async def getFile(urls):
     # writer.close()
     # all_frame.to_excel('files.xlsx',index=False)
 
-def getAccepterdButNotSorted(urls):
-    asyncio.run(getFile(urls))
+# def getAccepterdButNotSorted(urls):
+#     asyncio.run(getFile(urls))
 
 # asyncio.run(getOrdersStatuses())

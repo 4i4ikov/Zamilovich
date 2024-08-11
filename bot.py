@@ -258,12 +258,15 @@ requestsSession.verify = False
 requestsSession.cookies.update(cookies)
 requestsSession.headers.update(headers)
 
-def updatesk (cookies):
+def updatesk (cookies,config,requestsSession):
     response = requests.patch('https://logistics.market.yandex.ru/api/session',  cookies=cookies, verify=False)
     sk = ""
     if response.status_code==200:
-        return response.json().get("user").get("sk")
-
+        sk = response.json().get("user").get("sk")
+        requestsSession.headers.update({'sk': sk})
+        config.set("Session", "sk", sk)
+        return sk
+    
 # Compile regular expressions
 ORDERS_REGEX = re.compile(r"^LO-\d{9}|^\d{9}|^VOZ_FBS_\d{8}|^PVZ_FBS_RET_\d{6}|^VOZ_FF_\d{8}|^VOZ_MK_\d{7}|^PVZ_FBY_RET_\d{6}", re.MULTILINE)
 PALLET_REGEX = re.compile(r"^F1.{18}$", re.MULTILINE)
@@ -280,9 +283,9 @@ def getOrder(order):
         verify=False
     )
     if response.status_code != 200:
-        sk = updatesk(cookies)
-        config.set("Session", "sk", sk)
-        requestsSession.headers.update({'sk': config.get('Session', 'sk')})
+        sk = updatesk(cookies,config,requestsSession)
+        
+        
         with open('config.ini', 'w', encoding="utf8") as configfile:
             config.write(configfile)
         response = requestsSession.post(
