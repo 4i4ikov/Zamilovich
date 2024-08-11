@@ -19,6 +19,20 @@ from pylibdmtx.pylibdmtx import decode as pydecode
 from datetime import datetime
 
 async def gather_with_concurrency(n, *tasks):
+    """
+    Summary:
+    Async function to gather tasks with a specified concurrency level.
+
+    Explanation:
+    This function takes a concurrency level and a list of tasks to execute concurrently. It uses a semaphore to limit the number of concurrent tasks and returns the results once all tasks are completed.
+
+    Args:
+    - n: The concurrency level for executing tasks.
+    - *tasks: The tasks to execute concurrently.
+
+    Returns:
+    A list of results from the executed tasks.
+    """
     semaphore = asyncio.Semaphore(n)
     async def sem_task(task):
         async with semaphore:
@@ -27,6 +41,21 @@ async def gather_with_concurrency(n, *tasks):
 
 
 async def get_async(url, session, results):
+    """
+    Summary:
+    Asynchronously retrieves data from a URL and stores it in a results dictionary.
+
+    Explanation:
+    This function performs an asynchronous GET request to the specified URL using the provided session, reads the response data, and stores it in the results dictionary with a key extracted from the URL.
+
+    Args:
+    - url: The URL to retrieve data from.
+    - session: The aiohttp ClientSession to use for the request.
+    - results: A dictionary to store the retrieved data with keys based on the URL.
+
+    Returns:
+    None
+    """
     async with session.get(url) as response:
         i = url.split('=')[-1]
         if response.status == 200:
@@ -42,6 +71,19 @@ default = [
     "LO-361255578",
 ]
 async def getSortablesScanlog(sortableIds):
+    """
+    Summary:
+    Asynchronously retrieves and saves scanlog data for a list of sortable IDs.
+
+    Explanation:
+    This function fetches scanlog data for each sortable ID in the input list asynchronously, saves the data to Excel files, and sends the files via a Telegram bot.
+
+    Args:
+    - sortableIds: List of sortable IDs for which scanlog data needs to be retrieved.
+
+    Returns:
+    A dictionary containing the saved scanlog data with sortable IDs as keys.
+    """
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
 
@@ -61,6 +103,19 @@ async def getSortablesScanlog(sortableIds):
     return results.items()
 
 async def getOrdersScanlog(sortableIds):
+    """
+    Summary:
+    Asynchronously retrieves and saves scanlog data for a list of orders.
+
+    Explanation:
+    This function fetches scanlog data for each order in the input list asynchronously, reads the data into pandas DataFrames, concatenates them, and saves the result to an Excel file.
+
+    Args:
+    - sortableIds: List of order IDs for which scanlog data needs to be retrieved and saved.
+
+    Returns:
+    None
+    """
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
 
@@ -74,9 +129,28 @@ async def getOrdersScanlog(sortableIds):
     for j in results.values():
         tab = pd.read_excel(j)
         all_file_frames.append(tab)
+    pd_to_file(all_file_frames,'scans.xlsx')
+    print('Скачал сканлоги, дальше осталось их скинуть..')
+
+
+def pd_to_file(all_file_frames,filename):
+    """
+    Summary:
+    Converts a list of pandas DataFrames to an Excel file with styling.
+
+    Explanation:
+    This function takes a list of pandas DataFrames, concatenates them, applies styling, and saves the result to an Excel file.
+
+    Args:
+    - all_file_frames: List of pandas DataFrames to be concatenated and styled.
+    - filename: Name of the Excel file to save the styled DataFrame.
+
+    Returns:
+    None
+    """
     all_frame = pd.concat(all_file_frames)
     all_frame.reset_index(drop = True,inplace = True)
-    excelWriter = StyleFrame.ExcelWriter('scans.xlsx')
+    excelWriter = StyleFrame.ExcelWriter(filename)
     styler_obj=Styler(
         # bg_color=utils.colors.blue,
         bold=False,
@@ -84,13 +158,25 @@ async def getOrdersScanlog(sortableIds):
     )
     styledDataFrame = StyleFrame(all_frame,styler_obj=styler_obj)
     styledDataFrame.set_column_width(columns=styledDataFrame.columns,width=13) # type: ignore
-    best = styledDataFrame.columns.values.tolist()
+    best = styledDataFrame.columns.values.tolist() # type: ignore
     styledDataFrame.apply_headers_style(Styler(bold=False, font_size=8))
     styledDataFrame.to_excel(excel_writer=excelWriter, row_to_add_filters=0,index=False)
     excelWriter.close()
-    print('Скачал сканлоги, дальше осталось их скинуть..')
 
 async def getOrdersStatuses(orders):
+    """
+    Summary:
+    Asynchronously retrieves and saves order statuses data for a list of orders.
+
+    Explanation:
+    This function fetches order statuses data for each order in the input list asynchronously, reads the data into pandas DataFrames, concatenates them, and saves the result to an Excel file.
+
+    Args:
+    - orders: List of order IDs for which statuses data needs to be retrieved.
+
+    Returns:
+    None
+    """
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
     urls = [f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/sortables/download?orderExternalId={i}" for i in orders]
@@ -103,8 +189,7 @@ async def getOrdersStatuses(orders):
         tab = pd.read_excel(j)
         all_file_frames.append(tab)
     all_frame = pd.concat(all_file_frames)
-    
-    all_frame.to_excel('orders.xlsx',index=False)
+    pd_to_file(all_frame,'orders.xlsx')
 
 def getOrd(orders):
     asyncio.run(getOrdersStatuses(orders), debug=True)
@@ -112,7 +197,20 @@ def getOrd(orders):
 def getScan(orders):
     asyncio.run(getOrdersScanlog(orders), debug=True)
 
-async def getFile(urls):
+async def getFileAcceptedButNotSorted(urls):
+    """
+    Summary:
+    Asynchronously retrieves and saves data from a list of URLs to an Excel file.
+
+    Explanation:
+    This function fetches data from each URL in the input list asynchronously, reads the data into pandas DataFrames, concatenates them, and saves the result to an Excel file.
+
+    Args:
+    - urls: List of URLs from which data needs to be retrieved and saved.
+
+    Returns:
+    None
+    """
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
     conc_req = 40
@@ -125,7 +223,7 @@ async def getFile(urls):
     all_frame = pd.concat(all_file_frames)
     all_frame.to_excel('AcceptedButNotSorted.xlsx',index=False)
 def getAccepterdButNotSorted(urls):
-    asyncio.run(getFile(urls))
+    asyncio.run(getFileAcceptedButNotSorted(urls))
 
 
 
