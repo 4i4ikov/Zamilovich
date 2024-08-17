@@ -7,6 +7,7 @@ import pandas as pd
 import telebot
 import configparser
 from urllib.parse import unquote
+from pathlib import Path
 config = configparser.ConfigParser()
 config.read("config.ini")
 cookies = {
@@ -112,8 +113,8 @@ async def getFile(urls,day):
     await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls.values()])
     await session.close()
     all_file_frames = []
-    os.mkdir("rashodilis")
-    os.mkdir("rashodilis/{0}".format(day))
+    Path("rashodilis").mkdir(parents=True,exist_ok=True)
+    Path("rashodilis/{0}".format(day)).mkdir(parents=True,exist_ok=True)
     # writer = pd.ExcelWriter("files.xlsx", engine = 'openpyxl')
     for i, j in results.items():
         with open(f'./rashodilis/{day}/{i}',"wb+") as f:

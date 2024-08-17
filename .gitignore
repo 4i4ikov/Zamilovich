@@ -14,3 +14,6 @@
 /users
 /__pycache__
 /Сканлоги.xlsx
+/*.xlsx
+/*.txt
+/*.json
