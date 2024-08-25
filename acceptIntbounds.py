@@ -1,37 +1,86 @@
 import asyncio
 import configparser
-from itertools import batched
-from pathlib import Path
-import re
-from time import sleep
-# import updatesk as updatesk
-from datetime import datetime, time,date, timedelta
 import json
 import logging
+import re
+# import updatesk as updatesk
+from datetime import date, datetime, time, timedelta
+from itertools import batched
+from pathlib import Path
+from time import sleep
 from urllib.parse import unquote
+
 import aiohttp
 import pandas as pd
 import requests
 import telebot
+
 import asinhrom as ass
+
 st = datetime.now()
 config = configparser.ConfigParser()
 config.read("config.ini")
 cookies = {
-    'Session_id': config.get("Session","Session_id"),
+    'Session_id': config.get("Session", "Session_id"),
 }
 headers = {
-    'sk': config.get('Session','sk'),
+    'sk': config.get('Session', 'sk'),
 }
-def updatesk (cookies,config,requestsSession):
-    response = requests.patch('https://logistics.market.yandex.ru/api/session',  cookies=cookies, verify=False)
+
+
+async def get_file(urls, day):
+    session = aiohttp.ClientSession(cookies=cookies, headers=headers)
+    results = {}
+    conc_req = 40
+    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls.values()])
+    await session.close()
+    all_file_frames = []
+    Path("rashodilis").mkdir(parents=True, exist_ok=True)
+    Path("rashodilis/{0}".format(day)).mkdir(parents=True, exist_ok=True)
+    # writer = pd.ExcelWriter("files.xlsx", engine = 'openpyxl')
+    for i, j in results.items():
+        with open(f'./rashodilis/{day}/{i}', "wb+") as f:
+            f.write(j)
+
+
+async def gather_with_concurrency(n, *tasks):
+    semaphore = asyncio.Semaphore(n)
+
+    async def sem_task(task):
+        async with semaphore:
+            return await task
+    return await asyncio.gather(*(sem_task(task) for task in tasks))
+
+
+def get_filename(response):
+    header = response.headers.get('Content-Disposition')
+    if not header:
+        return False
+    filename = re.findall(r"filename\*=UTF-8''(.+)", header)
+    filename = unquote(filename[0])
+    return str(filename)
+
+
+async def get_async(url, session, results):
+    async with session.get(url) as response:
+        i = url.split('=')[-1]
+        if response.status == 200:
+            obj = await response.read()
+            filename = get_filename(response)
+            results[filename] = obj
+
+
+def updatesk(cookies, config, requestsSession):
+    response = requests.patch(
+        'https://logistics.market.yandex.ru/api/session',  cookies=cookies, verify=False)
     sk = ""
-    if response.status_code==200:
+    if response.status_code == 200:
         sk = response.json().get("user").get("sk")
         headers = {'sk': sk}
         requestsSession.headers.update(headers)
         config.set("Session", "sk", sk)
         return sk
+
 
 main_session = requests.Session()
 main_session.cookies.update(cookies)
@@ -42,61 +91,70 @@ tomorrow = today + timedelta(days=1)
 yesterday = today - timedelta(days=1)
 
 dateToAccept = str(yesterday)
+
+
 def delete_all_special_chars(input_string):
     return ''.join(e for e in input_string if e.isalnum())
+
+
 def download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAccept):
     json_data = {
-    'params': [
-        {
-        "sortingCenterId": 1100000040,
-        "date": dateToAccept,
-        "dateTo": dateToAccept,
-        "types": [],
-        "statuses": ["ARRIVED", "IN_PROGRESS", "SIGNED", "FIXED"],
-        "page": 1,
-        "size": 250
-    },
-    ],
-    'path': '/sorting-center/1100000040/inbounds',
-}
+        'params': [
+            {
+                "sortingCenterId": 1100000040,
+                "date": dateToAccept,
+                "dateTo": dateToAccept,
+                "types": [],
+                "statuses": ["ARRIVED", "IN_PROGRESS", "SIGNED", "FIXED"],
+                "page": 1,
+                "size": 250
+            },
+        ],
+        'path': '/sorting-center/1100000040/inbounds',
+    }
     response = main_session.post(
-    'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolveInboundList:resolveInboundList',
-    json=json_data,
-    verify=False
-    )
-    if response.status_code != 200:
-        sk = updatesk(cookies,config,main_session)
-        response = main_session.post(
         'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolveInboundList:resolveInboundList',
         json=json_data,
         verify=False
+    )
+    if response.status_code != 200:
+        sk = updatesk(cookies, config, main_session)
+        response = main_session.post(
+            'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolveInboundList:resolveInboundList',
+            json=json_data,
+            verify=False
         )
 
     responseFormat = response.json()["results"][0]["data"]["content"]
     pdInboundsList = pd.json_normalize(responseFormat, max_level=3)
 
     search = "DISCREPANCY_ACT"
-    pdFilteredList = pdInboundsList[pdInboundsList.apply(lambda row: row.astype(str).str.contains(search).any(), axis=1)]
-    urls= {}
+    pdFilteredList = pdInboundsList[pdInboundsList.apply(
+        lambda row: row.astype(str).str.contains(search).any(), axis=1)]
+    urls = {}
     pdFilteredList["url"] = ""
     for index, row in pdFilteredList.iterrows():
         DISCREPANCY_ACT_id = row["documents"][0]["id"]
         inbound_id = row["id"]
-        url = f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/inbounds/document?type=DISCREPANCY_ACT&id={DISCREPANCY_ACT_id}&inboundId={inbound_id}"
+        url = f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/inbounds/document?type=DISCREPANCY_ACT&id={
+            DISCREPANCY_ACT_id}&inboundId={inbound_id}"
         if row["movementType"] != "LINEHAUL":
-            urls[delete_all_special_chars(f"{row["supplierName"]} {row["inboundExternalId"]}")] = url
-        pdFilteredList.at[index,"url"] = url
+            urls[delete_all_special_chars(f"{row["supplierName"]} {
+                                          row["inboundExternalId"]}")] = url
+        pdFilteredList.at[index, "url"] = url
 
-    pdFilteredList.to_excel("inboundsToTest.xlsx",index=False)
+    pdFilteredList.to_excel("inboundsToTest.xlsx", index=False)
 
-    API_TOKEN = config.get("BOT","API_TOKEN")
+    API_TOKEN = config.get("BOT", "API_TOKEN")
     bot = telebot.TeleBot(API_TOKEN)
     chat_id = -4283452246
-    message_thread_id=None
-    bot.send_document(chat_id=chat_id,document=open("inboundsToTest.xlsx",'rb'),visible_file_name=f"TEST.xlsx",message_thread_id=message_thread_id)
-    asyncio.run(getFile(urls,dateToAccept))
-    
+    message_thread_id = None
+    bot.send_document(chat_id=chat_id, document=open("inboundsToTest.xlsx", 'rb'),
+                      visible_file_name=f"TEST.xlsx", message_thread_id=message_thread_id)
+    asyncio.run(get_file(urls, dateToAccept))
+
     # bot.send_document(chat_id=chat_id,document=open("files.xlsx",'rb'),visible_file_name=f"Файлики.xlsx",message_thread_id=message_thread_id)
+
 
 download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAccept)
 
@@ -123,7 +181,6 @@ download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAcc
 # ФИКСАЦИЯ ПОСТАВКИ
 
 
-
 # file = open("cellsToDelete.txt","r")
 # data = file.read()
 # users = data.split("\n")
@@ -143,7 +200,7 @@ download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAcc
 #         } for user in batch
 #     ]
 
-#     json_data = { # 
+#     json_data = { #
 #         'params': json1_datas,
 #         'path': '/sorting-center/1100000040/stages',
 #     }
@@ -164,7 +221,7 @@ download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAcc
 # pandas = []
 # for response in responses:
 #     pandas.append(pd.json_normalize(response.json()["results"]))
-    
+
 # panda = pd.concat(pandas)
 # panda.to_json("results2.json",index=False)
 # panda.to_excel("results22.xlsx",index=False)
@@ -183,43 +240,8 @@ download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAcc
 # # pprint(message)
 # bot.send_document(chat_id=chat_id,document=open("results22.xlsx",'rb'),visible_file_name=f"Result.xlsx",message_thread_id=thread_id)
 # message += f"Время выполнения скрипта: {round((datetime.now()-st).total_seconds(),2)} сек."
-# bot.send_message(chat_id, message,parse_mode='HTML',message_thread_id=thread_id)    
+# bot.send_message(chat_id, message,parse_mode='HTML',message_thread_id=thread_id)
 
 
-async def getFile(urls,day):
-    session = aiohttp.ClientSession(cookies=cookies, headers=headers)
-    results = {}
-    conc_req = 40
-    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls.values()])
-    await session.close()
-    all_file_frames = []
-    Path("rashodilis").mkdir(parents=True,exist_ok=True)
-    Path("rashodilis/{0}".format(day)).mkdir(parents=True,exist_ok=True)
-    # writer = pd.ExcelWriter("files.xlsx", engine = 'openpyxl')
-    for i, j in results.items():
-        with open(f'./rashodilis/{day}/{i}',"wb+") as f:
-            f.write(j)
-
-async def gather_with_concurrency(n, *tasks):
-    semaphore = asyncio.Semaphore(n)
-    async def sem_task(task):
-        async with semaphore:
-            return await task
-    return await asyncio.gather(*(sem_task(task) for task in tasks))
-
-def get_filename(response):
-    header = response.headers.get('Content-Disposition')
-    if not header: return False
-    filename = re.findall(r"filename\*=UTF-8''(.+)", header)
-    filename = unquote(filename[0])
-    return str(filename)
-async def get_async(url, session, results):
-    async with session.get(url) as response:
-        i = url.split('=')[-1]
-        if response.status == 200:
-            obj = await response.read()
-            filename = get_filename(response)
-            results[filename] = obj
-
-with open('config.ini','w', encoding="utf8") as configfile:
+with open('config.ini', 'w', encoding="utf8") as configfile:
     config.write(configfile)
