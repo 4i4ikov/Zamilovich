@@ -1,17 +1,20 @@
 import configparser
-import warnings
 import os
-import urllib3
-import updatesk as updatesk
-from datetime import datetime, time, date
-from styleframe import StyleFrame
-import pandas as pd
-# import json
+import warnings
+from datetime import date, datetime, time
 
+import pandas as pd
 import requests
 # from pprint import pprint
 # from bs4 import BeautifulSoup
 import telebot
+import urllib3
+from styleframe import StyleFrame
+
+import updatesk as updatesk
+
+# import json
+
 warnings.filterwarnings("ignore")
 urllib3.disable_warnings()
 
@@ -29,25 +32,25 @@ sess = requests.Session()
 sess.cookies.update(cookies)
 sess.headers.update(headers)
 today = str(date.today())
-routes = '&r=sortingCenter/routes/'
-sortables = '&r=sortingCenter/sortables/resolveSortableReport:resolveSortableReport'
+routes = 'r=sortingCenter/routes/'
+routes_full_info = routes + 'resolveGetRoutesFullInfo' ':resolveGetRoutesFullInfo' 
+sortables = 'r=sortingCenter/sortables/resolveSortableReport:resolveSortableReport'
 
-UrlForRequest = 'https://logistics.market.yandex.ru/api/resolve/?'
-# Панель грузомест
-'r=sortingCenter/sortables/resolveSortableStageStatistic:resolveSortableStageStatistic'
-routes + 'resolveGetRoutesFullInfo' ':resolveGetRoutesFullInfo'  # CourierAll
-routes + 'resolveGetRoutesSummary:resolveGetRoutesSummary'  # Courier cifri
-routes + 'resolveGetRoutesFullInfo:resolveGetRoutesFullInfo'  # Magistral
-sortables  # D
-sortables  # Drop
-sortables  # Sort
-routes + 'resolveGetRoutesFullInfo:resolveGetRoutesFullInfo'
-sortables
-sortables
-sortables
-sortables
-'&r=sortingCenter/inbounds/resolveInboundList:resolveInboundList'
-routes + 'resolveGetRoutesFullInfo:resolveGetRoutesFullInfo'
+UrlForRequest = "&".join([
+'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/sortables/resolveSortableStageStatistic:resolveSortableStageStatistic', # Панель грузомест
+routes_full_info,  # CourierAll
+routes + 'resolveGetRoutesSummary:resolveGetRoutesSummary',  # Courier cifri
+routes_full_info,  # Magistral
+sortables,  # D
+sortables,  # Drop
+sortables,  # Sort
+routes_full_info,
+sortables,
+sortables,
+sortables,
+sortables,
+'r=sortingCenter/inbounds/resolveInboundList:resolveInboundList',
+routes_full_info])
 
 
 json_data = {  # ПАНЕЛЬ ГРУЗОМЕСТ
@@ -222,6 +225,7 @@ json_data = {  # ПАНЕЛЬ ГРУЗОМЕСТ
 API_TOKEN = config.get("BOT", "API_TOKEN")
 bot = telebot.TeleBot(API_TOKEN)
 chat_id = config.get("BOT", "CHAT_ID")
+# chat_id = -4283452246
 thread_id = 0
 bot.send_chat_action(chat_id=chat_id, action='typing')  # 'upload_document'
 response = sess.post(
@@ -258,7 +262,9 @@ ChelnyPredsort = resultFromResponse[8]["data"]
 IzhevskPredsort = resultFromResponse[9]["data"]
 CheboksaryPredsort = resultFromResponse[10]["data"]
 KirovPredsort = resultFromResponse[11]["data"]
-predsort = hranenie = forsort = ""
+predsort = ""
+hranenie = ""
+forsort = ""
 for check in Panel["PLACE"]:
     match check["id"]:
         case 4531: predsort = str(check["count"])
@@ -297,8 +303,8 @@ inboundLinehaulDataFrame = inboundLinehaulDataFrame[[
     'supplierName',
     'courierName',
     'arrivalIntervalStart',
-    'acceptedAmount',
-    'totalAmount'
+    'boxAmount',
+    'plannedBoxAmount'
 ]]
 inboundLinehaulDataFrame.columns = [
     # "ТЯГАЧ",
@@ -316,7 +322,7 @@ inboundLinehaulDataFrame = inboundLinehaulDataFrame.loc[inboundLinehaulDataFrame
 inboundLinehaulDataFrame.sort_values(by="ВРЕМЯ", inplace=True)
 columns = inboundLinehaulDataFrame.columns
 now = st.strftime('%Y-%m-%d %H_%M')
-fileName = f"./LINEHAUL/{now}.xlsx"
+fileName = f"./OUTPUT/LINEHAUL/{now}.xlsx"
 excelWriter = StyleFrame.ExcelWriter(fileName)
 styledDataFrame = StyleFrame(inboundLinehaulDataFrame)
 styledDataFrame.to_excel(excel_writer=excelWriter, best_fit=(
@@ -326,7 +332,12 @@ bot.send_document(
     chat_id=chat_id, document=open(fileName, 'rb'),
     visible_file_name=f"ЛАЙНХОЛЛЫ {now}.xlsx",
     message_thread_id=thread_id
-    )
+)
+ekb = "Склад, СЦ МК Екатеринбург"
+ekaterinburg_inbound_linehaul = inboundLinehaulDataFrame.query('ОТКУДА ==  @ekb')
+ekb_accepted_amount = ekaterinburg_inbound_linehaul["Принято"].values[0]
+ekb_planned_amount = ekaterinburg_inbound_linehaul["План"].values[0]
+strings["Екатеринбург: "] = f"{ekb_accepted_amount}/{ekb_planned_amount}"
 
 incoming = resultFromResponse[13]["data"]["content"]
 incomingDataFrame = pd.json_normalize(incoming)
@@ -341,7 +352,7 @@ groupTableincoming = incomingDataFrame.groupby(
 groupTableincoming = groupTableincoming[vals]
 groupTableincoming.columns = valsRenamed
 groupTableincoming["Дата"] = st
-fileName = f"./POSTAVKI/{now}.xlsx"
+fileName = f"./OUTPUT/POSTAVKI/{now}.xlsx"
 excelWriter = StyleFrame.ExcelWriter(fileName)
 styledDataFrame = StyleFrame(groupTableincoming)
 styledDataFrame.to_excel(
@@ -353,15 +364,14 @@ bot.send_document(
     chat_id=chat_id, document=open(fileName, 'rb'),
     visible_file_name=f"МАРШРУТЫ {now}.xlsx", message_thread_id=thread_id)
 
-# routes = [courier["id"] for courier in CourierAll["content"]]
+routes = [courier["id"] for courier in CourierAll["content"]]
 
 # urlsNotAcceptedByCourier = [f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/sortables/download?searchRouteIdInOldRoutes=false&sortableStatuses=ARRIVED_DIRECT&sortableStatuses=KEEPED_DIRECT&sortingCenterId=1100000040&page=0&size=20&sortableTypes=PLACE&sortableTypes=TOTE&crossDockOnly=false&routeId={route}&" for route in routes]
 # asinhrom.getAccepterdButNotSorted(urlsNotAcceptedByCourier)
 
-# if time(5,00) <= st.time() <= time(10,10):
 insort = []
 insortStr = ""
-for Order in InSORTCellOrders:
+for Order in InSORTCelllOrders:
     if "orderExternalId" in Order.keys():
         insort.append(f"{Order["orderExternalId"]}")  # {Order["cellName"]}
 for Order in set(insort):
@@ -401,7 +411,7 @@ for key, value in strings.items():
     checkvalue = value.split("/")[0]
     if (checkvalue.isdigit() and int(checkvalue) > 0):
         value = "<u>" + value + "</u>"
-        message +=key + str(value) + "\n"
+        message += key + str(value) + "\n"
 # message += f'Заказы в ячейках СОРТ: {}'
 # pprint(message)
 with open('insort.csv', 'w+') as file:
