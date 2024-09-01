@@ -1,203 +1,182 @@
 import asyncio
-import configparser
-import re
-
-# import updatesk as updatesk
-from datetime import date, datetime, timedelta
+import datetime
+import time
 from pathlib import Path
-from urllib.parse import unquote
 
-import aiohttp
 import pandas as pd
-import requests
 import telebot
 
-st = datetime.now()
-config = configparser.ConfigParser()
-config.read("config.ini")
-cookies = {
-    'Session_id': config.get("Session", "Session_id"),
-}
-headers = {
-    'sk': config.get('Session', 'sk'),
-}
-
-
-
-
-
-def updatesk(cookies, config, requestsSession):
-    response = requests.patch(
-        'https://logistics.market.yandex.ru/api/session',  cookies=cookies, verify=False)
-    sk = ""
-    if response.status_code == 200:
-        sk = response.json().get("user").get("sk")
-        headers = {'sk': sk}
-        requestsSession.headers.update(headers)
-        config.set("Session", "sk", sk)
-        return sk
-
-
-main_session = requests.Session()
-main_session.cookies.update(cookies)
-main_session.headers.update(headers)
-
-today = date.today()
-tomorrow = today + timedelta(days=1)
-yesterday = today - timedelta(days=1)
-
-dateToAccept = str(yesterday)
+import asinhrom as ass
+import utils
 
 
 def delete_all_special_chars(input_string):
-    return ''.join(e for e in input_string if e.isalnum())
+    return "".join(e for e in input_string if e.isalnum())
 
 
-def download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAccept):
-    json_data = {
-        'params': [
+def accept_all_inbounds(main_session, sorting_center_id, dateToAccept):
+    response = resolve_inbound_list_v2(
+        main_session,
+        dateToAccept,
+        sorting_center_id,
+        statuses=["ARRIVED", "IN_PROGRESS"],
+    )
+    response_format = response.json()["results"][0]["data"]["content"]
+    pd_inbounds_list = pd.json_normalize(response_format, max_level=3)
+    params = []
+    for index, row in pd_inbounds_list.iterrows():
+        params.append(
             {
-                "sortingCenterId": 1100000040,
+                "action": "FIX_INBOUND",
+                "inboundId": row["id"],
+                "sortingCenterId": sorting_center_id,
+                "externalInboundId": row["inboundExternalId"],
+                "isV3": True,
+            }
+        )
+
+    # ФИКСАЦИЯ ПОСТАВКИ
+    json_data = {
+        "params": params,
+        "path": f"/sorting-center/{sorting_center_id}/inbounds",
+    }
+    url = (
+        "https://logistics.market.yandex.ru/api/resolve/?"
+        + "&r=sortingCenter/inbounds/resolvePerformActionOnInbound:resolvePerformActionOnInbound"
+        * len(params)
+    )
+    response = main_session.post(
+        url,
+        json=json_data,
+    )
+    print("response", response)
+    # ФИКСАЦИЯ ПОСТАВКИ
+
+
+def resolve_inbound_list(main_session, json_data):
+    return main_session.post(
+        "https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolveInboundList:resolveInboundList",
+        json=json_data,
+        verify=False,
+    )
+
+
+def download_discrepancy_acts(
+    main_session,
+    sorting_center_id,
+    dateToAccept,
+):
+    response = resolve_inbound_list_v2(main_session, dateToAccept, sorting_center_id)
+    response_format = response.json()["results"][0]["data"]["content"]
+    pd_inbounds_list = pd.json_normalize(response_format, max_level=3)
+
+    search = "DISCREPANCY_ACT"
+    pd_filtered_list = pd_inbounds_list[
+        pd_inbounds_list.apply(lambda row: row.astype(str).str.contains(search).any(), axis=1)
+    ]
+    urls = {}
+    pd_filtered_list["url"] = ""
+    for index, row in pd_filtered_list.iterrows():
+        discrepancy_act_id = row["documents"][0]["id"]
+        inbound_id = row["id"]
+        url = f"https://logistics.market.yandex.ru/api/sorting-center/{sorting_center_id}/inbounds/document?type=DISCREPANCY_ACT&id={discrepancy_act_id}&inboundId={inbound_id}"
+        if row["movementType"] != "LINEHAUL":
+            urls[delete_all_special_chars(f"{row['supplierName']} {row['inboundExternalId']}")] = (
+                url
+            )
+        pd_filtered_list.at[index, "url"] = url
+
+    filename = "inboundsToTest.xlsx"
+    pd_filtered_list.to_excel(filename, index=False)
+    # TODO: make it work with async
+    asyncio.run(ass.get_file(urls, dateToAccept))
+    return filename
+
+
+def resolve_inbound_list_v2(
+    main_session,
+    dateToAccept,
+    sorting_center_id,
+    statuses=["ARRIVED", "IN_PROGRESS", "SIGNED", "FIXED"],
+):
+    json_data = {
+        "params": [
+            {
+                "sortingCenterId": sorting_center_id,
                 "date": dateToAccept,
                 "dateTo": dateToAccept,
                 "types": [],
-                "statuses": ["ARRIVED", "IN_PROGRESS", "SIGNED", "FIXED"],
+                "statuses": statuses,
                 "page": 1,
-                "size": 250
+                "size": 300,
             },
         ],
-        'path': '/sorting-center/1100000040/inbounds',
+        "path": f"/sorting-center/{sorting_center_id}/inbounds",
     }
-    response = main_session.post(
-        'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolveInboundList:resolveInboundList',
-        json=json_data,
-        verify=False
-    )
+    response = resolve_inbound_list(main_session, json_data)
     if response.status_code != 200:
-        sk = updatesk(cookies, config, main_session)
-        response = main_session.post(
-            'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolveInboundList:resolveInboundList',
-            json=json_data,
-            verify=False
-        )
-
-    responseFormat = response.json()["results"][0]["data"]["content"]
-    pdInboundsList = pd.json_normalize(responseFormat, max_level=3)
-
-    search = "DISCREPANCY_ACT"
-    pdFilteredList = pdInboundsList[pdInboundsList.apply(
-        lambda row: row.astype(str).str.contains(search).any(), axis=1)]
-    urls = {}
-    pdFilteredList["url"] = ""
-    for index, row in pdFilteredList.iterrows():
-        DISCREPANCY_ACT_id = row["documents"][0]["id"]
-        inbound_id = row["id"]
-        url = f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/inbounds/document?type=DISCREPANCY_ACT&id={
-            DISCREPANCY_ACT_id}&inboundId={inbound_id}"
-        if row["movementType"] != "LINEHAUL":
-            urls[delete_all_special_chars(f"{row["supplierName"]} {
-                                          row["inboundExternalId"]}")] = url
-        pdFilteredList.at[index, "url"] = url
-
-    pdFilteredList.to_excel("inboundsToTest.xlsx", index=False)
-
-    API_TOKEN = config.get("BOT", "API_TOKEN")
-    bot = telebot.TeleBot(API_TOKEN)
-    chat_id = -4283452246
-    message_thread_id = None
-    bot.send_document(chat_id=chat_id, document=open("inboundsToTest.xlsx", 'rb'),
-                      visible_file_name=f"TEST.xlsx", message_thread_id=message_thread_id)
-    asyncio.run(get_file(urls, dateToAccept))
-
-    # bot.send_document(chat_id=chat_id,document=open("files.xlsx",'rb'),visible_file_name=f"Файлики.xlsx",message_thread_id=message_thread_id)
+        utils.updatesk(main_session)
+        response = resolve_inbound_list(main_session, json_data)
+    return response
 
 
-download_send_discrepancy_acts(config, cookies, headers, main_session, dateToAccept)
+def main():
+    config, main_session, api_token, sorting_center_id, chat_id, message_thread_id, bot = (
+        utils.load_config()
+    )
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
 
-# ФИКСАЦИЯ ПОСТАВКИ
-# json_data = {
-#     'params': [
-#         {
-#             'action': 'FIX_INBOUND',
-#             'inboundId': 10000000844650,
-#             'sortingCenterId': 1100000040,
-#             'externalInboundId': 'TMU106295148',
-#             'isV3': True,
-#         },
-#     ],
-#     'path': '/sorting-center/1100000040/inbounds',
-# }
-
-# response = main_session.post(
-#     'https://logistics.market.yandex.ru/api/resolve/?r=sortingCenter/inbounds/resolvePerformActionOnInbound:resolvePerformActionOnInbound',
-#     cookies=cookies,
-#     headers=headers,
-#     json=json_data,
-# )
-# ФИКСАЦИЯ ПОСТАВКИ
+    date_to_accept = str(yesterday)
+    accept_all_inbounds(main_session, sorting_center_id, date_to_accept)
+    download_discrepancy_acts(
+        main_session,
+        sorting_center_id,
+        date_to_accept,
+    )
+    send_to_chat(chat_id, message_thread_id, bot, date_to_accept)
+    utils.save_config(config)
 
 
-# file = open("cellsToDelete.txt","r")
-# data = file.read()
-# users = data.split("\n")
-# users = set(users)
-# batchedusers = batched(users,100)
+def send_to_chat(chat_id, message_thread_id, bot, date_to_accept):
+    bot.send_message(
+        chat_id=chat_id,
+        text=f"Поставки с расхождениями за {date_to_accept}:\n\t",
+        message_thread_id=message_thread_id,
+        parse_mode="HTML",
+    )
+    bot.send_document(
+        chat_id=chat_id,
+        document=open("inboundsToTest.xlsx", "rb"),
+        visible_file_name=f"Расхождения за {date_to_accept}.xlsx",
+        message_thread_id=message_thread_id,
+    )
+    directory = Path(f"rashodilis/{date_to_accept}")
+    for file in directory.iterdir():
+        if file.is_file():
+            with open(file, "rb") as f:
+                send_file_with_retries(chat_id, message_thread_id, bot, file.name, f, max_retries=3)
 
 
-# i = 0
-# responses = []
-# for batch in batchedusers:
-#     UrlForRequest = 'https://logistics.market.yandex.ru/api/resolve/?'
-#     UrlForRequest +='&r=sortingCenter/cells/resolveDeleteCell:resolveDeleteCell' * len(batch)#Панель грузомест
-#     json1_datas = [
-#         {
-#         'cellId': f'{user}',
-#         'sortingCenterId': 1100000040,
-#         } for user in batch
-#     ]
-
-#     json_data = { #
-#         'params': json1_datas,
-#         'path': '/sorting-center/1100000040/stages',
-#     }
-#     resp = sess.post(
-#         UrlForRequest,
-#         json=json_data,
-#         verify=False
-#     )
-#     responses.append(resp)
-#     i = i+1
-# response = responses[0]
-# API_TOKEN = config.get("BOT","API_TOKEN")
-# bot = telebot.TeleBot(API_TOKEN)
-# chat_id = -1002174558932
-# thread_id = 2
-# if responses[0].status_code != 200: raise Exception(responses[0])
-
-# pandas = []
-# for response in responses:
-#     pandas.append(pd.json_normalize(response.json()["results"]))
-
-# panda = pd.concat(pandas)
-# panda.to_json("results2.json",index=False)
-# panda.to_excel("results22.xlsx",index=False)
-# strings = {
-# "Текущая дата и время: " : str(st.replace(microsecond=0)),
-# "<b>Количество cells: </b>" : len(users),
-# # "ТЕКСТ ОТВЕТА:" : response.json()
-# }
-
-# message = ""
-# for key,value in strings.items():
-#     # if (value.isdigit() and int(value) > 0) > 0:
-#     #     value = "<b><u>" + value + "</u></b>"
-#     message += key +  str (value) + "\n"
-
-# # pprint(message)
-# bot.send_document(chat_id=chat_id,document=open("results22.xlsx",'rb'),visible_file_name=f"Result.xlsx",message_thread_id=thread_id)
-# message += f"Время выполнения скрипта: {round((datetime.now()-st).total_seconds(),2)} сек."
-# bot.send_message(chat_id, message,parse_mode='HTML',message_thread_id=thread_id)
+def send_file_with_retries(chat_id, message_thread_id, bot, filename, f, max_retries=3):
+    retry_count = 0
+    while retry_count < max_retries:
+        try:
+            bot.send_document(
+                chat_id=chat_id,
+                document=f.read(),
+                visible_file_name=filename,
+                message_thread_id=message_thread_id,
+            )
+            break
+        except telebot.apihelper.ApiTelegramException as e:
+            if e.error_code == 429:
+                retry_after = 30
+                print(f"Rate limit exceeded. Retrying after {retry_after} seconds...")
+                time.sleep(retry_after)
+                retry_count += 1
+            else:
+                raise e
 
 
-with open('config.ini', 'w', encoding="utf8") as configfile:
-    config.write(configfile)
+if __name__ == "__main__":
+    main()

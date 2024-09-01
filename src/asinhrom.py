@@ -1,13 +1,11 @@
 import asyncio
 import configparser
 import re
-from os import system
 from pathlib import Path
 from urllib.parse import unquote
 
 import aiohttp
 import pandas as pd
-import telebot
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -47,16 +45,6 @@ async def get_async(url, session, results):
             results[filename] = obj
 
 
-default = [
-    "437665887",
-    "437667076",
-    "PVZ_FBS_RET_873907",
-    "437564522",
-    "437665576",
-    "LO-361255578",
-]
-
-
 async def getSortablesScanlog(sortableIds):
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
@@ -68,17 +56,15 @@ async def getSortablesScanlog(sortableIds):
 
     conc_req = 40
 
-    await gather_with_concurrency(
-        conc_req, *[get_async(i, session, results) for i in urls]
-    )
+    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
     await session.close()
-    API_TOKEN = config.get("BOT", "API_TOKEN")
+    # API_TOKEN = config.get("BOT", "API_TOKEN")
 
-    bot = telebot.TeleBot(API_TOKEN)
+    # bot = telebot.TeleBot(API_TOKEN)
     for i, j in results.items():
         with open(f"./papka/{i}.xlsx", "wb") as f:
             f.write(j)
-            bot.send_document(-4143093216, j, visible_file_name=f"{i}.xlsx")
+            # bot.send_document(-4143093216, j, visible_file_name=f"{i}.xlsx")
     return results.items()
 
 
@@ -93,9 +79,7 @@ async def getOrdersScanlog(sortableIds):
 
     conc_req = 40
 
-    await gather_with_concurrency(
-        conc_req, *[get_async(i, session, results) for i in urls]
-    )
+    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
     await session.close()
     all_file_frames = []
     for j in results.values():
@@ -114,9 +98,7 @@ async def getOrdersStatuses(orders):
         for i in orders
     ]
     conc_req = 40
-    await gather_with_concurrency(
-        conc_req, *[get_async(i, session, results) for i in urls]
-    )
+    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
     await session.close()
 
     all_file_frames = []
@@ -136,10 +118,10 @@ def getScan(orders):
 
 
 def getDocuments(urls, day):
-    asyncio.run(getFile(urls, day), debug=True)
+    asyncio.run(get_file(urls, day), debug=True)
 
 
-async def getFile(urls, day):
+async def get_file(urls, day):
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
     conc_req = 40

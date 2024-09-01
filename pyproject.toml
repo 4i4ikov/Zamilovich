@@ -6,10 +6,27 @@ authors = ["4i4ikov <4i4ikov@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.9"
+requests = "^2.31.0"
+pandas = "^2.0.3"
+openpyxl = "^3.1.2"
+python-telegram-bot = "^20.6.6"
+
+[tool.poetry.dev-dependencies]
+black = "^23.3.0"
+isort = "^5.11.4"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = [
+    # Allow Pydantic's `@validator` decorator to trigger class method treatment.
+    "pydantic.validator",
+    # Allow SQLAlchemy's dynamic decorators, like `@field.expression`, to trigger class method treatment.
+    "declared_attr",
+    "expression",
+    "comparator",
+]
