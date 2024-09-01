@@ -1,0 +1,12 @@
+[Session]
+sk = # session sk
+session_id = # session id from cookies
+
+[BOT]
+api_token = # telegram bot api_token
+chat_id = # chat id from telegram
+message_thread_id = 0
+
+[SC]
+sorting_center_id = 1100000040 # sc_id
+
