@@ -11,7 +11,7 @@ import re
 import tempfile
 from datetime import datetime
 
-import cv2
+# import cv2
 import requests
 
 # from pprint import pprint
@@ -23,11 +23,10 @@ import telebot
 import urllib3
 
 # from PIL import Image
-from pylibdmtx.pylibdmtx import decode as pydecode
-from pyzbar.pyzbar import decode as pyzdecode
-
+# from pylibdmtx.pylibdmtx import decode as pydecode
+# from pyzbar.pyzbar import decode as pyzdecode
 import asinhrom as ass
-from updatesk import updatesk
+from utils import updatesk
 
 logger = logging.getLogger(__name__)
 
@@ -133,8 +132,7 @@ def getOrders(inputstring):
 
 def getPallets(inputstring):
     RegularExpressionForPallets = r"^F1.{18}$"
-    Pallets = re.findall(RegularExpressionForPallets,
-                         inputstring, re.MULTILINE)
+    Pallets = re.findall(RegularExpressionForPallets, inputstring, re.MULTILINE)
     return Pallets
 
 
@@ -164,77 +162,13 @@ print("Запуск бота")
 bot = telebot.TeleBot(API_TOKEN)
 
 
-# Распознать ШК заказов по фото
-# @bot.message_handler(content_types=['photo'], func=lambda message: message.chat.id == -904145156)
-def photo(message):
-    # if (message.caption and "qr" in message.caption):
-    print("получил изображение")
-    # bot.set_message_reaction(message.chat.id,message.id,[telebot.types.ReactionTypeEmoji(EMOJI[2])])
-    fileID = message.photo[-1].file_id
-    file_info = bot.get_file(fileID)
-
-    downloaded_file = bot.download_file(file_info.file_path)
-
-    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
-    temp.write(downloaded_file)
-    temp.close()
-
-    image = cv2.imread(temp.name)
-    try:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # cv2.imwrite(temp[1].name,gray)
-    except Exception as err:
-        print(err)
-    else:
-        gray = image
-        # cv2.imwrite(temp[1].name,gray)
-
-    barcodeScanners = []
-    barcodeScanners.append(pyzdecode(gray))
-    decoder = cv2.QRCodeDetector()
-    retval, decoded_info, points, straight_qrcode = decoder.detectAndDecodeMulti(
-        gray)
-
-    barcodeScanners.append(decoded_info)
-
-    barcodeScanners.append(pydecode(gray))
-
-    print(barcodeScanners)
-    decoded = set()
-    if barcodeScanners[0]:
-        for qrcode in barcodeScanners[0]:
-            decoded.add(qrcode.data.decode())
-    if retval:
-        for qrcode in barcodeScanners[1]:
-            decoded.add(qrcode)
-    if barcodeScanners[2]:
-        for qrcode in barcodeScanners[2]:
-            decoded.add(qrcode.data.decode())
-
-    # with open("image.jpg", 'wb+') as new_file:
-    #     new_file.write(downloaded_file)
-    # bot.send_photo(chat_id=message.chat.id,message_thread_id=message.message_thread_id,reply_to_message_id=message.message_id,photo=open("gray.png","rb"))
-    if decoded:
-        # bot.set_message_reaction(message.chat.id,message.id,[telebot.types.ReactionTypeEmoji(EMOJI[1])])
-        forward = bot.forward_message(
-            chat_id=-1002205631792,
-            from_chat_id=message.chat.id,
-            message_id=message.id,
-            message_thread_id=88,
-        )
-        bot.reply_to(forward, f"{'\n'.join(decoded)}")
-    else:
-        print("не распознал\n")
-        # forward = bot.forward_message(chat_id=-1002205631792,from_chat_id=message.chat.id,message_id=message.id,message_thread_id=94)
-        # bot.reply_to(forward,f"Не смог распознать.")
-
-
 # Узнать ID текущего чата
 @bot.message_handler(commands=["id"])  # Узнать ID чата
 def echo_message(message):
     bot.reply_to(
-        message, f"Chat_id: {message.chat.id}\nThread_id: {
-            message.message_thread_id}"
+        message,
+        f"Chat_id: {message.chat.id}\nThread_id: {
+            message.message_thread_id}",
     )
 
 
@@ -244,15 +178,10 @@ def echo_message_scanlog(msg):
     if canUserUseMyBot:
         st = datetime.now()
         msg.text = (
-            msg.text.replace(",", "\n")
-            .replace(" ", "\n")
-            .replace("(", "\n")
-            .replace(")", "\n")
+            msg.text.replace(",", "\n").replace(" ", "\n").replace("(", "\n").replace(")", "\n")
         )
         # bot.reply_to(message, f"Привет, {message.from_user.full_name}, взял в работу, время {st}\nТвой user_id: {message.from_user.id}\n")
-        my_msg = bot.reply_to(
-            msg, f"Привет, {msg.from_user.full_name}, выгружаю сканлоги\n"
-        )
+        my_msg = bot.reply_to(msg, f"Привет, {msg.from_user.full_name}, выгружаю сканлоги\n")
         # reply = "ты написал мне: \"" + message.text + "\" длина твоего сообщения: " + str (len(message.text) )   + "\n"
 
         Orders = getOrders(msg.text)
@@ -304,7 +233,9 @@ def echo_message_scanlog(msg):
                     returnMessage += f"Заказы есть в ПИ: {
                         ' '.join(normalorders)}\n"
                 else:
-                    returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за отсутствия команды /yes\n"
+                    returnMessage += (
+                        f"Я не проверял есть ли заказы в ПИ, из-за отсутствия команды /yes\n"
+                    )
             if notnormalorders:
                 returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
         if TOTEs:
@@ -321,7 +252,7 @@ def echo_message_scanlog(msg):
         (datetime.now()-st).total_seconds()}\n"
     if len(returnMessage) > 4096:
         for x in range(0, len(returnMessage), 4096):
-            bot.reply_to(msg, "{}".format(returnMessage[x: x + 4096]))
+            bot.reply_to(msg, "{}".format(returnMessage[x : x + 4096]))
     else:
         bot.edit_message_text(
             chat_id=my_msg.chat.id,
@@ -333,16 +264,9 @@ def echo_message_scanlog(msg):
 @bot.message_handler(commands=["откуда"])  # Выгрузка заказов из ПИ
 def echo_message_scanlog(msg):
     st = datetime.now()
-    msg.text = (
-        msg.text.replace(",", "\n")
-        .replace(" ", "\n")
-        .replace("(", "\n")
-        .replace(")", "\n")
-    )
+    msg.text = msg.text.replace(",", "\n").replace(" ", "\n").replace("(", "\n").replace(")", "\n")
     # bot.reply_to(message, f"Привет, {message.from_user.full_name}, взял в работу, время {st}\nТвой user_id: {message.from_user.id}\n")
-    my_msg = bot.reply_to(
-        msg, f"Привет, {msg.from_user.full_name}, выгружаю сканлоги\n"
-    )
+    my_msg = bot.reply_to(msg, f"Привет, {msg.from_user.full_name}, выгружаю сканлоги\n")
     # reply = "ты написал мне: \"" + message.text + "\" длина твоего сообщения: " + str (len(message.text) )   + "\n"
     Orders = getOrders(msg.text)
     Pallets = getPallets(msg.text)
@@ -391,7 +315,9 @@ def echo_message_scanlog(msg):
                     returnMessage += f"Заказы есть в ПИ: {
                         ' '.join(normalorders)}\n"
                 else:
-                    returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за отсутствия команды /yes\n"
+                    returnMessage += (
+                        f"Я не проверял есть ли заказы в ПИ, из-за отсутствия команды /yes\n"
+                    )
             if notnormalorders:
                 returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
         if TOTEs:
@@ -408,7 +334,7 @@ def echo_message_scanlog(msg):
         (datetime.now()-st).total_seconds()}\n"
     if len(returnMessage) > 4096:
         for x in range(0, len(returnMessage), 4096):
-            bot.reply_to(msg, "{}".format(returnMessage[x: x + 4096]))
+            bot.reply_to(msg, "{}".format(returnMessage[x : x + 4096]))
     else:
         bot.edit_message_text(
             chat_id=my_msg.chat.id,
@@ -424,15 +350,9 @@ def echo_message_scanlog(msg):
 )  # Выгрузка заказов из ПИ
 def echo_message_bot(msg):
     st = datetime.now()
-    msg.text = (
-        msg.text.replace(",", "\n")
-        .replace(" ", "\n")
-        .replace("(", "\n")
-        .replace(")", "\n")
-    )
+    msg.text = msg.text.replace(",", "\n").replace(" ", "\n").replace("(", "\n").replace(")", "\n")
     # bot.reply_to(message, f"Привет, {message.from_user.full_name}, взял в работу, время {st}\nТвой user_id: {message.from_user.id}\n")
-    my_msg = bot.reply_to(
-        msg, f"Привет, {msg.from_user.full_name}, взял в работу\n")
+    my_msg = bot.reply_to(msg, f"Привет, {msg.from_user.full_name}, взял в работу\n")
     # reply = "ты написал мне: \"" + message.text + "\" длина твоего сообщения: " + str (len(message.text) )   + "\n"
     Orders = getOrders(msg.text)
     Pallets = getPallets(msg.text)
@@ -473,7 +393,9 @@ def echo_message_bot(msg):
                     returnMessage += f"Заказы есть в ПИ: {
                         ' '.join(normalorders)}\n"
                 else:
-                    returnMessage += f"Я не проверял есть ли заказы в ПИ, из-за отсутствия команды /yes\n"
+                    returnMessage += (
+                        f"Я не проверял есть ли заказы в ПИ, из-за отсутствия команды /yes\n"
+                    )
             if notnormalorders:
                 returnMessage += f"Засылы: {'\n'.join(notnormalorders)}\n"
         if TOTEs:
@@ -490,7 +412,7 @@ def echo_message_bot(msg):
         (datetime.now()-st).total_seconds()}\n"
     if len(returnMessage) > 4096:
         for x in range(0, len(returnMessage), 4096):
-            bot.reply_to(msg, "{}".format(returnMessage[x: x + 4096]))
+            bot.reply_to(msg, "{}".format(returnMessage[x : x + 4096]))
     else:
         bot.edit_message_text(
             chat_id=my_msg.chat.id,

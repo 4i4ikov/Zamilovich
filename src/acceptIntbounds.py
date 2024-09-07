@@ -155,6 +155,12 @@ def send_to_chat(chat_id, message_thread_id, bot, date_to_accept):
         if file.is_file():
             with open(file, "rb") as f:
                 send_file_with_retries(chat_id, message_thread_id, bot, file.name, f, max_retries=3)
+    bot.send_message(
+        chat_id=chat_id,
+        text=f"Отправил все расхождения за {date_to_accept} в чат.\n\t",
+        message_thread_id=message_thread_id,
+        parse_mode="HTML",
+    )
 
 
 def send_file_with_retries(chat_id, message_thread_id, bot, filename, f, max_retries=3):
@@ -175,7 +181,7 @@ def send_file_with_retries(chat_id, message_thread_id, bot, filename, f, max_ret
                 time.sleep(retry_after)
                 retry_count += 1
             else:
-                raise e
+                print(e)
 
 
 if __name__ == "__main__":

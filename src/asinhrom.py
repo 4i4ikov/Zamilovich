@@ -31,8 +31,8 @@ def get_filename(response):
     header = response.headers.get("Content-Disposition")
     if not header:
         return False
-    filename = re.findall(r"filename\*=UTF-8''(.+)", header)
-    filename = unquote(filename[0])
+    filename = re.findall(r"filename\*=UTF-8''(.+)|filename=\"(.+)\"", header)
+    filename = unquote("".join(filename[0]))
     return str(filename)
 
 
@@ -73,7 +73,8 @@ async def getOrdersScanlog(sortableIds):
     results = {}
 
     urls = [
-        f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/orders/{i}/scanLog.xlsx"
+        f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/orders/{
+            i}/scanLog.xlsx"
         for i in sortableIds
     ]
 
@@ -82,10 +83,16 @@ async def getOrdersScanlog(sortableIds):
     await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
     await session.close()
     all_file_frames = []
-    for j in results.values():
+    for i, j in results.items():
         tab = pd.read_excel(j)
         all_file_frames.append(tab)
     all_frame = pd.concat(all_file_frames)
+    all_frame_grouped_indexes = (
+        all_frame.groupby(["Код грузоместа"])["Дата/время"].transform(max)
+        == all_frame["Дата/время"]
+    )
+    all_frame_grouped = all_frame[all_frame_grouped_indexes]
+    all_frame_grouped.to_excel("scansGrouped.xlsx", index=False)
     all_frame.to_excel("scans.xlsx", index=False)
     print("Скачал сканлоги, дальше осталось их скинуть..")
 
