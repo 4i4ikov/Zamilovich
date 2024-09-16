@@ -17,6 +17,9 @@ headers = {
 }
 
 
+CONC_REQ = 100
+
+
 async def gather_with_concurrency(n, *tasks):
     semaphore = asyncio.Semaphore(n)
 
@@ -27,8 +30,7 @@ async def gather_with_concurrency(n, *tasks):
     return await asyncio.gather(*(sem_task(task) for task in tasks))
 
 
-def get_filename(response):
-    header = response.headers.get("Content-Disposition")
+def get_filename(header):
     if not header:
         return False
     filename = re.findall(r"filename\*=UTF-8''(.+)|filename=\"(.+)\"", header)
@@ -38,25 +40,26 @@ def get_filename(response):
 
 async def get_async(url, session, results):
     async with session.get(url) as response:
-        # i = url.split("=")[-1]
+        i = url.split("=")[-1]
         if response.status == 200:
             obj = await response.read()
-            filename = get_filename(response)
+            header = response.headers.get("Content-Disposition")
+            filename = get_filename(header)
+            if not filename or filename == "sortables.xlsx":
+                filename = f"{i}.xlsx"
             results[filename] = obj
 
 
 async def getSortablesScanlog(sortableIds):
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
-
     urls = [
-        f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/sortable/scanlog?sortableId={i}"
+        f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/sortable/scanlog?sortableId={
+            i}"
         for i in sortableIds
     ]
 
-    conc_req = 40
-
-    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
+    await gather_with_concurrency(CONC_REQ, *[get_async(i, session, results) for i in urls])
     await session.close()
     # API_TOKEN = config.get("BOT", "API_TOKEN")
 
@@ -78,9 +81,7 @@ async def getOrdersScanlog(sortableIds):
         for i in sortableIds
     ]
 
-    conc_req = 40
-
-    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
+    await gather_with_concurrency(CONC_REQ, *[get_async(i, session, results) for i in urls])
     await session.close()
     all_file_frames = []
     for i, j in results.items():
@@ -101,11 +102,11 @@ async def getOrdersStatuses(orders):
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
     urls = [
-        f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/sortables/download?orderExternalId={i}"
+        f"https://logistics.market.yandex.ru/api/sorting-center/1100000040/sortables/download?orderExternalId={
+            i}"
         for i in orders
     ]
-    conc_req = 40
-    await gather_with_concurrency(conc_req, *[get_async(i, session, results) for i in urls])
+    await gather_with_concurrency(CONC_REQ, *[get_async(i, session, results) for i in urls])
     await session.close()
 
     all_file_frames = []
@@ -131,9 +132,8 @@ def getDocuments(urls, day):
 async def get_file(urls, day):
     session = aiohttp.ClientSession(cookies=cookies, headers=headers)
     results = {}
-    conc_req = 40
     await gather_with_concurrency(
-        conc_req, *[get_async(i, session, results) for i in urls.values()]
+        CONC_REQ, *[get_async(i, session, results) for i in urls.values()]
     )
     await session.close()
     all_file_frames = []

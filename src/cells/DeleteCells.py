@@ -5,7 +5,6 @@ from itertools import batched
 
 import pandas as pd
 import requests
-
 # from pprint import pprint
 # from bs4 import BeautifulSoup
 import telebot
@@ -30,16 +29,16 @@ sess = requests.Session()
 sess.cookies.update(cookies)
 sess.headers.update(headers)
 today = str(date.today())
-file = open("cellsToDelete.txt", "r")
+file = open("input/cellsToDelete.txt", "r")
 data = file.read()
-users = data.split("\n")
-users = set(users)
-batchedusers = batched(users, 100)
+cells = data.split("\n")
+cells = set(cells)
+batch_array = batched(cells, 100)
 
 
 i = 0
 responses = []
-for batch in batchedusers:
+for batch in batch_array:
     UrlForRequest = "https://logistics.market.yandex.ru/api/resolve/?"
     UrlForRequest += "&r=sortingCenter/cells/resolveDeleteCell:resolveDeleteCell" * len(
         batch
@@ -76,7 +75,7 @@ panda = pd.concat(pandas)
 panda.to_excel("results22.xlsx", index=False)
 strings = {
     "Текущая дата и время: ": str(st.replace(microsecond=0)),
-    "<b>Количество cells: </b>": len(users),
+    "<b>Количество cells: </b>": len(cells),
     # "ТЕКСТ ОТВЕТА:" : response.json()
 }
 
@@ -94,9 +93,11 @@ bot.send_document(
     message_thread_id=thread_id,
 )
 message += (
-    f"Время выполнения скрипта: {round((datetime.now()-st).total_seconds(), 2)} сек."
+    f"Время выполнения скрипта: {
+        round((datetime.now()-st).total_seconds(), 2)} сек."
 )
-bot.send_message(chat_id, message, parse_mode="HTML", message_thread_id=thread_id)
+bot.send_message(chat_id, message, parse_mode="HTML",
+                 message_thread_id=thread_id)
 with open("config.ini", "w", encoding="utf8") as configfile:
     config.write(configfile)
 

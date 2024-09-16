@@ -79,7 +79,8 @@ def download_discrepancy_acts(
     for index, row in pd_filtered_list.iterrows():
         discrepancy_act_id = row["documents"][0]["id"]
         inbound_id = row["id"]
-        url = f"https://logistics.market.yandex.ru/api/sorting-center/{sorting_center_id}/inbounds/document?type=DISCREPANCY_ACT&id={discrepancy_act_id}&inboundId={inbound_id}"
+        url = f"https://logistics.market.yandex.ru/api/sorting-center/{
+            sorting_center_id}/inbounds/document?type=DISCREPANCY_ACT&id={discrepancy_act_id}&inboundId={inbound_id}"
         if row["movementType"] != "LINEHAUL":
             urls[delete_all_special_chars(f"{row['supplierName']} {row['inboundExternalId']}")] = (
                 url
@@ -121,9 +122,8 @@ def resolve_inbound_list_v2(
 
 
 def main():
-    config, main_session, api_token, sorting_center_id, chat_id, message_thread_id, bot = (
-        utils.load_config()
-    )
+    config, main_session, sorting_center_id, chat_id, message_thread_id, bot = utils.load_config()
+    chat_id, message_thread_id = ("-1002130148271", "5053")
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
 
     date_to_accept = str(yesterday)
@@ -177,7 +177,8 @@ def send_file_with_retries(chat_id, message_thread_id, bot, filename, f, max_ret
         except telebot.apihelper.ApiTelegramException as e:
             if e.error_code == 429:
                 retry_after = 30
-                print(f"Rate limit exceeded. Retrying after {retry_after} seconds...")
+                print(f"Rate limit exceeded. Retrying after {
+                      retry_after} seconds...")
                 time.sleep(retry_after)
                 retry_count += 1
             else:

@@ -7,8 +7,9 @@ import pandas as pd
 import requests
 import telebot
 from styleframe import StyleFrame
+from tabulate import tabulate
 
-import utilities
+import utils
 
 # import json
 
@@ -28,6 +29,7 @@ SORTING_CENTER_ID = config.get("SC", "SORTING_CENTER_ID")
 sess = requests.Session()
 sess.cookies.update(COOKIES)
 sess.headers.update(headers)
+sess.verify = False
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -223,15 +225,11 @@ json_data_for_request = {
 
 
 bot.send_chat_action(chat_id=CHAT_ID, action="typing")  # 'upload_document'
-response = sess.post(url_for_request, json=json_data_for_request, verify=False)
+response = sess.post(url_for_request, json=json_data_for_request,)
 
 if response.status_code == 400:
     bot.send_message(CHAT_ID, "Сессия закончилась, но я сам её обновлю")
-    config.set("Session", "sk", utilities.updatesk(sess))
-    headers = {
-        "sk": config.get("Session", "sk"),
-    }
-    sess.headers.update(headers)
+    utils.updatesk(sess)
     response = sess.post(
         url_for_request,
         json=json_data_for_request,
@@ -295,7 +293,8 @@ inboundLinehaulDataFrame.columns = [
     "Принято",
     "План",
 ]
-inboundLinehaulDataFrame["ВРЕМЯ"] = pd.to_datetime(inboundLinehaulDataFrame["ВРЕМЯ"])
+inboundLinehaulDataFrame["ВРЕМЯ"] = pd.to_datetime(
+    inboundLinehaulDataFrame["ВРЕМЯ"])
 inboundLinehaulDataFrame = inboundLinehaulDataFrame.loc[inboundLinehaulDataFrame["План"] > 0]
 inboundLinehaulDataFrame.sort_values(by="ВРЕМЯ", inplace=True)
 columns = inboundLinehaulDataFrame.columns
@@ -318,7 +317,8 @@ bot.send_document(
     message_thread_id=THREAD_ID,
 )
 ekb = "Склад, СЦ МК Екатеринбург"
-ekaterinburg_inbound_linehaul = inboundLinehaulDataFrame.query("ОТКУДА ==  @ekb")
+ekaterinburg_inbound_linehaul = inboundLinehaulDataFrame.query(
+    "ОТКУДА ==  @ekb")
 ekb_accepted_amount = ekaterinburg_inbound_linehaul["Принято"].to_numpy()[0]
 ekb_planned_amount = ekaterinburg_inbound_linehaul["План"].to_numpy()[0]
 
@@ -332,7 +332,8 @@ valsRenamed = "Откуда	План	Не принято	Принято	Отсо
     "	",
 )
 
-groupTableincoming = incomingDataFrame.groupby(["warehouse.type"]).sum().reset_index()
+groupTableincoming = incomingDataFrame.groupby(
+    ["warehouse.type"]).sum().reset_index()
 groupTableincoming = groupTableincoming[vals]
 groupTableincoming.columns = valsRenamed
 groupTableincoming["Дата"] = st
@@ -429,10 +430,26 @@ for key, value in strings.items():
 #     visible_file_name="В ячейках СОРТ.csv",
 # )
 # bot.send_document(chat_id=chat_id,document=open("AcceptedButNotSorted.xlsx",'rb'),visible_file_name=f"Осталось отсортировать {now}.xlsx")
-message += f"Время выполнения скрипта: {
-    round((datetime.now()-st).total_seconds(), 2)} сек."
+# message += f"Время выполнения скрипта: {
+#     round((datetime.now()-st).total_seconds(), 2)} сек."
 bot.send_message(CHAT_ID, message, parse_mode="HTML")
 if time(7, 00) <= st.time() <= time(9, 10):
     bot.send_message(1063498880, message, parse_mode="HTML")
-with open("config.ini", "w+", encoding="utf8") as configfile:
-    config.write(configfile)
+
+response_zones = sess.get(
+    "https://hubs.market.yandex.ru/api/gateway/sorting-center/1100000040/zones",
+)
+if response_zones.status_code == 200:
+    panda = pd.json_normalize(response_zones.json()["zones"])
+    panda = panda[panda["statistic.totalUsersOnlyZone"] > 0]
+    cols = ["name", "statistic.activeUsers"]
+    cols_renamed = ["Зона", "Активных"]
+    panda = panda[cols]
+    panda.columns = cols_renamed
+    panda = panda.sort_values(by="Активных", ascending=False)
+    text = tabulate(panda, headers=panda.columns, showindex=False,
+                    tablefmt="plain", colalign=["left"])
+    bot.send_message(CHAT_ID, f"Активность на СЦ:\n<pre>{
+                     text}</pre>", parse_mode="HTML")
+    with open("config.ini", "w+", encoding="utf8") as configfile:
+        config.write(configfile)
